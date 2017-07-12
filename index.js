@@ -45,8 +45,8 @@ exports.handleauth = function(req, res) {
     //  api.user('333cyj333', function(err, result, remaining, limit) {
     //     res.send(limit);
     //   });
-      api.user('333cyj333', function(err, result, remaining, limit) {
-          res.send(result.data);
+      api.user('333cyj333', function(err, result, remaining, limit,data) {
+          res.send(data);
       });
  
       // res.send('You made it!! access_token is ' + result.access_token );
