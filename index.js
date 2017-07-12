@@ -2,6 +2,8 @@ var express = require('express');
 var http = require('http');
 var app = express();
 var api = require('instagram-node').instagram();
+var request = require("request");
+
 
 var InstagramAPI = require('instagram-api');
 var accessToken = '55502361.179b7e3.aadfa417c1584a3cb64dc6c8b45816f6';//'23612221.3fcb46b.348431486f3a4fb85081d5242db9ca1c';
@@ -18,19 +20,8 @@ Instagram.set('client_secret', 'ba85a46e88db41919aa22fcc175324a8');
 
 
 
-var server = require('http').createServer(app);
-var io = require('socket.io')(server);
-io.on('connection', function(){ 
-  socket.emit('news', { hello: 'world' });
-  socket.on('my other event', function (data) {
-    console.log(data);
-  });
-});
-server.listen(3000);
-
-
 app.set('port', (process.env.PORT || 5000));
-app.use(express.bodyParser());
+// app.use(express.bodyParser());
 app.use(express.static(__dirname + '/public'));
 
 // views is directory for all template files
@@ -78,9 +69,9 @@ app.get('/authorize_user', exports.authorize_user);
 // This is your redirect URI 
 app.get('/handleauth', exports.handleauth);
 
-// http.createServer(app).listen(app.get('port'), function () {
-//   console.log("Express server listening on port " + app.get('port'));
-// });
+http.createServer(app).listen(app.get('port'), function () {
+  console.log("Express server listening on port " + app.get('port'));
+});
 
 
 app.get('/media', function (req, res) {
@@ -94,8 +85,21 @@ app.get('/media', function (req, res) {
   // });
 });
 
-app.get('/subscribe', function(request, response){
-  Instagram.subscriptions.handshake(request, response); 
+app.get('/subscribe', function (request, response) {
+  Instagram.subscriptions.handshake(request, response);
+});
+
+app.get('/getjson', function (req, res) {
+  var url = 'http://localhost:5000/stylesheets/media.json';
+  request({
+    url: url,
+    json: true
+  }, function (error, response, body) {
+
+    if (!error && response.statusCode === 200) {
+      res.send(body.items[0]) // Print the json response
+    }
+  })
 });
 
 // app.listen(app.get('port'), function() {
