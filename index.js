@@ -30,7 +30,7 @@ var redirect_uri = 'https://afternoon-coast-78677.herokuapp.com/handleauth';
 
 
 exports.authorize_user = function(req, res) {
- res.redirect(api.get_authorization_url(redirect_uri, { scope: ['public_content'] }));
+ res.redirect(api.get_authorization_url(redirect_uri, { scope: ['basic+public_content'] }));
 };
  
 exports.handleauth = function(req, res) {
@@ -55,6 +55,11 @@ app.get('/handleauth', exports.handleauth);
  
 http.createServer(app).listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));
+});
+
+
+app.post('/subscription', function(req, res) {
+  
 });
 
 
