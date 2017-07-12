@@ -41,12 +41,12 @@ exports.handleauth = function(req, res) {
     } else {
       console.log('Yay! Access token is ' + result.access_token);
     
-      api.use({ access_token: result.access_token });
-     api.user('333cyj333', function(err, result, remaining, limit) {
-        res.send(result);
-      });
+    //   api.use({ access_token: result.access_token });
+    //  api.user('333cyj333', function(err, result, remaining, limit) {
+    //     res.send(result);
+    //   });
       
-      //res.send('You made it!! access_token is ' + result.access_token );
+      res.send('You made it!! access_token is ' + result.access_token );
     }
   });
 };
