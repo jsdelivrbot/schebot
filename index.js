@@ -48,7 +48,7 @@ exports.handleauth = function(req, res) {
       var options = { 'count' : 3 };
       api.user_media_recent('333cyj333' ,{count : 3},function(err, medias, pagination, remaining, limit) {
         if(err){
-          res.send(err);
+          res.send(err.body);
         }
         if(!err){
            res.send(medias);
