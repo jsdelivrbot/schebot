@@ -97,7 +97,7 @@ app.get('/getjson', function (req, res) {
   }, function (error, response, body) {
 
     if (!error && response.statusCode === 200) {
-      res.send(body.items[0]) // Print the json response
+      res.send(body.items[0].created_time) // Print the json response
     }
   })
 });
