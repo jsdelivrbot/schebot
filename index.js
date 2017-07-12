@@ -37,10 +37,10 @@ exports.handleauth = function(req, res) {
   api.authorize_user(req.query.code, redirect_uri, function(err, result) {
     if (err) {
       console.log(err.body);
-      res.send("Didn't work");
+      res.send(err.body);
     } else {
       console.log('Yay! Access token is ' + result.access_token);
-      res.send('You made it!!');
+      res.send('You made it!! access_token is ' + result.access_token );
     }
   });
 };
