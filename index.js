@@ -45,14 +45,13 @@ exports.handleauth = function(req, res) {
     //  api.user('333cyj333', function(err, result, remaining, limit) {
     //     res.send(limit);
     //   });
-      api.user('333cyj333', function(err, result, remaining, limit) {
-         
-            res.send("success");
-         
+      var options = { count : 3 };
+      api.user_media_recent('333cyj333', options ,function(err, medias, pagination, remaining, limit) {
+        res.send(medias);
       });
  
       // res.send('You made it!! access_token is ' + result.access_token );
-    }
+      }
   });
 };
  
