@@ -47,7 +47,7 @@ exports.handleauth = function(req, res) {
     //   });
       var options = { count : 3 };
       api.user_media_recent('333cyj333', options ,function(err, medias, pagination, remaining, limit) {
-        res.send(medias);
+        res.send(medias[i].id);
       });
  
       // res.send('You made it!! access_token is ' + result.access_token );
