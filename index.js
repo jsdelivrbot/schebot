@@ -40,7 +40,12 @@ exports.handleauth = function(req, res) {
       res.send(err);
     } else {
       console.log('Yay! Access token is ' + result.access_token);
-      res.send('You made it!! access_token is ' + result.access_token );
+    
+      api.use({ access_token: result.access_token });
+      api.user('1946899430', function(err, result, remaining, limit) {
+        res.send(result);
+      });
+      //res.send('You made it!! access_token is ' + result.access_token );
     }
   });
 };
@@ -53,6 +58,7 @@ app.get('/handleauth', exports.handleauth);
 http.createServer(app).listen(app.get('port'), function(){
   console.log("Express server listening on port " + app.get('port'));
 });
+
 
 // app.listen(app.get('port'), function() {
 //   console.log('Node app is running on port', app.get('port'));
