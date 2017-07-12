@@ -24,13 +24,13 @@ app.get('/', function(request, response) {
 
 api.use({
   client_id: '179b7e3894764c9dad6bdce62d422949',
-  client_secret: 'ba85a46e88db41919aa22fcc175324a8 '
+  client_secret: 'ba85a46e88db41919aa22fcc175324a8'
 });
 var redirect_uri = 'https://afternoon-coast-78677.herokuapp.com/handleauth';
 
 
 exports.authorize_user = function(req, res) {
-  res.redirect(api.get_authorization_url(redirect_uri, { scope: ['likes'], state: 'a state' }));
+  res.redirect(api.get_authorization_url(redirect_uri));//, { scope: ['likes'], state: 'a state' }
 };
  
 exports.handleauth = function(req, res) {
