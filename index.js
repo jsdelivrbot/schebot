@@ -46,7 +46,7 @@ exports.handleauth = function(req, res) {
     //     res.send(limit);
     //   });
       var options = { count : 3 };
-      api.user_media_recent('333cyj333', options ,function(err, medias, pagination, remaining, limit) {
+      api.user_media_recent('333cyj333' ,function(err, medias, pagination, remaining, limit) {
         res.send(medias[0].id);
       });
  
