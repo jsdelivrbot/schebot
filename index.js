@@ -12,8 +12,25 @@ const InstagramNodeApi = require('instagram-node-api');
 const instagramNodeApi = new InstagramNodeApi(accessToken);
 
 
-app.set('port', (process.env.PORT || 5000));
+Instagram = require('instagram-node-lib');
+Instagram.set('client_id', '179b7e3894764c9dad6bdce62d422949');
+Instagram.set('client_secret', 'ba85a46e88db41919aa22fcc175324a8');
 
+
+
+var server = require('http').createServer(app);
+var io = require('socket.io')(server);
+io.on('connection', function(){ 
+  socket.emit('news', { hello: 'world' });
+  socket.on('my other event', function (data) {
+    console.log(data);
+  });
+});
+server.listen(3000);
+
+
+app.set('port', (process.env.PORT || 5000));
+app.use(express.bodyParser());
 app.use(express.static(__dirname + '/public'));
 
 // views is directory for all template files
@@ -61,9 +78,9 @@ app.get('/authorize_user', exports.authorize_user);
 // This is your redirect URI 
 app.get('/handleauth', exports.handleauth);
 
-http.createServer(app).listen(app.get('port'), function () {
-  console.log("Express server listening on port " + app.get('port'));
-});
+// http.createServer(app).listen(app.get('port'), function () {
+//   console.log("Express server listening on port " + app.get('port'));
+// });
 
 
 app.get('/media', function (req, res) {
@@ -77,6 +94,9 @@ app.get('/media', function (req, res) {
   // });
 });
 
+app.get('/subscribe', function(request, response){
+  Instagram.subscriptions.handshake(request, response); 
+});
 
 // app.listen(app.get('port'), function() {
 //   console.log('Node app is running on port', app.get('port'));

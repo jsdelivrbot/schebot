@@ -15,7 +15,9 @@
     "http": "0.0.0",
     "instagram-api": "^1.0.3",
     "instagram-node": "^0.5.8",
-    "instagram-node-api": "^1.6.0"
+    "instagram-node-api": "^1.6.0",
+    "instagram-node-lib": "^0.1.1",
+    "socket.io": "^2.0.3"
   },
   "repository": {
     "type": "git",
