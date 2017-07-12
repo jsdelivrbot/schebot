@@ -37,7 +37,7 @@ exports.handleauth = function(req, res) {
   api.authorize_user(req.query.code, redirect_uri, function(err, result) {
     if (err) {
       console.log(err.body);
-      res.send(err);
+      res.send("denied");
     } else {
       console.log('Yay! Access token is ' + result.access_token);
     
