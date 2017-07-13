@@ -19,10 +19,6 @@ Instagram.set('client_id', '179b7e3894764c9dad6bdce62d422949');
 Instagram.set('client_secret', 'ba85a46e88db41919aa22fcc175324a8');
 
 
-var pubSubHubbub = require("pubsubhubbub");
-var pubSubSubscriber = pubSubHubbub.createServer(options);
-
-
 
 app.set('port', (process.env.PORT || 5000));
 // app.use(express.bodyParser());
