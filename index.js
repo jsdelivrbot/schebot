@@ -37,11 +37,11 @@ app.get('/', function (request, response) {
 //   // The usual... 
 // });
 
-
-api.use({
+var Clients = {
   client_id: '179b7e3894764c9dad6bdce62d422949',
   client_secret: 'ba85a46e88db41919aa22fcc175324a8'
-});
+};
+api.use(Clients);
 var redirect_uri = 'https://afternoon-coast-78677.herokuapp.com/handleauth';
 
 
@@ -58,7 +58,7 @@ exports.handleauth = function (req, res) {
       console.log('Yay! Access token is ' + result.access_token);
 
       api.use({ access_token: result.access_token });
-      api.subscriptions(function (err, subscriptions, remaining, limit) {
+      api.subscriptions(Clients,function (err, subscriptions, remaining, limit) {
         if(err) res.send(err);
         if(!err) res.send(subscriptions);
        
