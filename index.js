@@ -3,7 +3,7 @@ var http = require('http');
 var app = express();
 var api = require('instagram-node').instagram();
 var request = require("request");
-
+var bodyParser = require('body-parser')
 
 var InstagramAPI = require('instagram-api');
 var accessToken = '55502361.179b7e3.aadfa417c1584a3cb64dc6c8b45816f6';//'23612221.3fcb46b.348431486f3a4fb85081d5242db9ca1c';
@@ -27,6 +27,15 @@ app.use(express.static(__dirname + '/public'));
 // views is directory for all template files
 app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
+
+app.use(bodyParser.urlencoded({
+    extended: true
+}));
+
+/**bodyParser.json(options)
+ * Parses the text as JSON and exposes the resulting object on req.body.
+ */
+app.use(bodyParser.json());
 
 app.get('/', function (request, response) {
   response.render('pages/index');
@@ -78,19 +87,24 @@ http.createServer(app).listen(app.get('port'), function () {
 });
 
 app.post('/url', function (req, res) {
-  var hub_chanllenge = req.params.hub.challenge;
-  var verify_token = req.params.hub.verify_token;
-  console.log(hub_chanllenge, verify_token);
+  var hub_chanllenge = req.query['hub.challenge']
+  // var verify_token = req.params.hub.verify_token;
+  console.log(hub_chanllenge);
   console.log("call back")
   res.sendStatus(200);
 });
 
 app.get('/url', function (req, res) {
-  var hub_chanllenge = req.params.hub.challenge;
-  var verify_token = req.params.hub.verify_token;
-  console.log(hub_chanllenge, verify_token);
+  var hub_chanllenge = req.query['hub.challenge'];
+  // var verify_token = req.params.hub.verify_token;
+  console.log(hub_chanllenge);
   console.log("call back")
   res.sendStatus(200);
+});
+
+app.post('/test', function (req, res) {
+  var test = req.body[0].value;
+  console.log(test);
 });
 
 app.get('/media', function (req, res) {
