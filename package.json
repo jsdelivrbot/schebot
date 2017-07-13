@@ -17,6 +17,7 @@
     "instagram-node": "^0.5.8",
     "instagram-node-api": "^1.6.0",
     "instagram-node-lib": "^0.1.1",
+    "pubsubhubbub": "^0.4.1",
     "request": "^2.81.0",
     "socket.io": "^2.0.3"
   },

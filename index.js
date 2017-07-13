@@ -19,6 +19,10 @@ Instagram.set('client_id', '179b7e3894764c9dad6bdce62d422949');
 Instagram.set('client_secret', 'ba85a46e88db41919aa22fcc175324a8');
 
 
+var pubSubHubbub = require("pubsubhubbub");
+var pubSubSubscriber = pubSubHubbub.createServer(options);
+
+
 
 app.set('port', (process.env.PORT || 5000));
 // app.use(express.bodyParser());
@@ -58,11 +62,8 @@ exports.handleauth = function (req, res) {
       console.log('Yay! Access token is ' + result.access_token);
 
       api.use({ access_token: result.access_token });
-      api.add_user_subscription('https://afternoon-coast-78677.herokuapp.com/1946899430', function(err, result, remaining, limit){
-        if(!err){
-          res.send(result);
-        }
-        if(err) res.send(err);
+      ig.subscriptions(function (err, subscriptions, remaining, limit) {
+        res.send(subscriptions);
       });
       // res.send('You made it!! access_token is ' + result.access_token);
     }
@@ -78,8 +79,12 @@ http.createServer(app).listen(app.get('port'), function () {
   console.log("Express server listening on port " + app.get('port'));
 });
 
-app.get('/:user_id', function (req, res) {
- console.log("call back")
+app.post('/url', function (req, res) {
+  var hub_chanllenge = req.params.hub.challenge;
+  var verify_token = req.params.hub.verify_token;
+  console.log(hub_chanllenge, verify_token);
+  console.log("call back")
+  res.sendStatus(200);
 });
 
 
