@@ -90,7 +90,7 @@ app.post('/url', function (req, res) {
   // var verify_token = req.params.hub.verify_token;
   console.log(hub_chanllenge);
   console.log("call back")
-  res.sendStatus(200);
+  res.sendStatus(hub_chanllenge);
 });
 
 app.get('/url', function (req, res) {
@@ -98,7 +98,7 @@ app.get('/url', function (req, res) {
   // var verify_token = req.params.hub.verify_token;
   console.log(hub_chanllenge);
   console.log("call back")
-  res.sendStatus(200);
+  res.sendStatus(hub_chanllenge);
 });
 
 app.post('/test', function (req, res) {
