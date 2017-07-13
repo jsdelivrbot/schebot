@@ -85,7 +85,13 @@ app.post('/url', function (req, res) {
   res.sendStatus(200);
 });
 
-
+app.get('/url', function (req, res) {
+  var hub_chanllenge = req.params.hub.challenge;
+  var verify_token = req.params.hub.verify_token;
+  console.log(hub_chanllenge, verify_token);
+  console.log("call back")
+  res.sendStatus(200);
+});
 
 app.get('/media', function (req, res) {
   instagramNodeApi.user('333cyj333');
