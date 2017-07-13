@@ -62,8 +62,10 @@ exports.handleauth = function (req, res) {
       console.log('Yay! Access token is ' + result.access_token);
 
       api.use({ access_token: result.access_token });
-      ig.subscriptions(function (err, subscriptions, remaining, limit) {
-        res.send(subscriptions);
+      api.subscriptions(function (err, subscriptions, remaining, limit) {
+        if(err) res.send(err);
+        if(!err) res.send(subscriptions);
+       
       });
       // res.send('You made it!! access_token is ' + result.access_token);
     }
