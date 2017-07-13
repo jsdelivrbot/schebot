@@ -66,7 +66,7 @@ exports.handleauth = function (req, res) {
     } else {
       console.log('Yay! Access token is ' + result.access_token);
 
-      api.use({ access_token: result.access_token });
+      // api.use({ access_token: result.access_token });
       api.add_user_subscription('https://afternoon-coast-78677.herokuapp.com/user', {verify_token : result.access_token} , function(err, result, remaining, limit){
         if(err) res.send(err);
         if(!err) res.send(result);
