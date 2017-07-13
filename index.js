@@ -58,8 +58,13 @@ exports.handleauth = function (req, res) {
       console.log('Yay! Access token is ' + result.access_token);
 
       api.use({ access_token: result.access_token });
-
-      res.send('You made it!! access_token is ' + result.access_token);
+      api.add_user_subscription('https://afternoon-coast-78677.herokuapp.com/1946899430', function(err, result, remaining, limit){
+        if(!err){
+          res.send(result);
+        }
+        if(err) res.send(err);
+      });
+      // res.send('You made it!! access_token is ' + result.access_token);
     }
   });
 };
@@ -72,6 +77,11 @@ app.get('/handleauth', exports.handleauth);
 http.createServer(app).listen(app.get('port'), function () {
   console.log("Express server listening on port " + app.get('port'));
 });
+
+app.get('/:user_id', function (req, res) {
+ console.log("call back")
+});
+
 
 
 app.get('/media', function (req, res) {
