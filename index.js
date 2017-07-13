@@ -86,11 +86,11 @@ http.createServer(app).listen(app.get('port'), function () {
 });
 
 app.post('/url', function (req, res) {
-  var hub_chanllenge = req.query['hub.challenge']
+  var hub_chanllenge = req.query['hub.challenge'];
   // var verify_token = req.params.hub.verify_token;
   console.log(hub_chanllenge);
   console.log("call back")
-  res.sendStatus(hub_chanllenge);
+  res.send(hub_chanllenge);
 });
 
 app.get('/url', function (req, res) {
@@ -98,7 +98,7 @@ app.get('/url', function (req, res) {
   // var verify_token = req.params.hub.verify_token;
   console.log(hub_chanllenge);
   console.log("call back")
-  res.sendStatus(hub_chanllenge);
+  res.send(hub_chanllenge);
 });
 
 app.post('/test', function (req, res) {
