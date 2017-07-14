@@ -65,14 +65,14 @@ app.get('/getJson', function (req, res) {
       //CHECK TIME
       var created_time = body.items[0].created_time;
       var timestamp_ct = moment.unix(created_time);
-      var currenttime = moment().format();
+      var currenttime = moment().format('YYYY-MM-DD HH:mm:00');
       var currentimeKR = momentTz.tz(currenttime, "Asia/Seoul");
       console.log("current time : " + currenttime);
-      console.log("currenttimeKR : " + currentimeKR.format('YYYY-MM-DD HH:mm'))
-      var lastMin = currentimeKR.subtract(1, 'minute').format('YYYY-MM-DD HH:mm');
+      console.log("currenttimeKR : " + currentimeKR.format('YYYY-MM-DD HH:mm:00'))
+      var lastMin = currentimeKR.subtract(1, 'minute').format('YYYY-MM-DD HH:mm:00');
       console.log("last min : " + lastMin);
       res.send(timestamp_ct) // Print the json response
-      console.log("post created : " + timestamp_ct.format('YYYY-MM-DD HH:mm'));
+      console.log("post created : " + timestamp_ct.format('YYYY-MM-DD HH:mm:00'));
 
     }
   })
