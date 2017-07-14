@@ -4,6 +4,9 @@ var app = express();
 var api = require('instagram-node').instagram();
 var request = require("request");
 var bodyParser = require('body-parser')
+var moment = require('moment')
+var momentTz = require('moment-timezone');
+
 
 var InstagramAPI = require('instagram-api');
 var accessToken = '55502361.179b7e3.aadfa417c1584a3cb64dc6c8b45816f6';//'23612221.3fcb46b.348431486f3a4fb85081d5242db9ca1c';
@@ -29,7 +32,7 @@ app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 
 app.use(bodyParser.urlencoded({
-    extended: true
+  extended: true
 }));
 
 /**bodyParser.json(options)
@@ -67,9 +70,9 @@ exports.handleauth = function (req, res) {
       console.log('Yay! Access token is ' + result.access_token);
 
       // api.use({ access_token: result.access_token });
-      api.add_user_subscription('https://afternoon-coast-78677.herokuapp.com/user', {verify_token : result.access_token} , function(err, result, remaining, limit){
-        if(err) res.send(err);
-        if(!err) res.send(result);
+      api.add_user_subscription('https://afternoon-coast-78677.herokuapp.com/user', { verify_token: result.access_token }, function (err, result, remaining, limit) {
+        if (err) res.send(err);
+        if (!err) res.send(result);
       });
       // res.send('You made it!! access_token is ' + result.access_token);
     }
@@ -121,18 +124,56 @@ app.get('/subscribe', function (request, response) {
   Instagram.subscriptions.handshake(request, response);
 });
 
-app.get('/getjson', function (req, res) {
-  var url = 'http://localhost:5000/stylesheets/media.json';
+app.get('/getJson', function (req, res) {
+  var url = 'https://www.instagram.com/333cyj333/media/';
   request({
     url: url,
     json: true
   }, function (error, response, body) {
 
     if (!error && response.statusCode === 200) {
-      res.send(body.items[0].created_time) // Print the json response
+      //RECENT PICTURE
+      var itemLen = body.items.length;
+      console.log(itemLen);
+
+      var type = body.items[0].type;
+      var link = body.items[0].link;
+      //IMAGE TYPE
+      if (type == "image") {
+        //IMAGE URL
+        var url = body.items[0].images.standard_resolution.url;
+        console.log("url :  " + url);
+
+
+        //CAPTION
+        var txtcaption
+        var Chkcaption = body.items[0].caption;
+        if (Chkcaption !== null) {
+          txtcaption = body.items[0].caption.text;
+        }
+        if (Chkcaption == null) {
+          txtcaption = "";
+        }
+        console.log(txtcaption);
+      }
+
+
+      //CHECK TIME
+      var created_time = body.items[0].created_time;
+      var timestamp_ct = moment.unix(created_time);
+      var currenttime = moment().format();
+      var currentimeKR = momentTz.tz(currenttime, "Asia/Seoul");
+      console.log("current time : " + currenttime);
+      console.log("currenttimeKR : " + currentimeKR.format('YYYY-MM-DD HH:mm'))
+      var lastMin = currentimeKR.subtract(1, 'minute').format('YYYY-MM-DD HH:mm');
+      console.log("last min : " + lastMin);
+      res.send(timestamp_ct) // Print the json response
+      console.log("post created : " + timestamp_ct.format('YYYY-MM-DD HH:mm'));
+
     }
   })
 });
+
 
 // app.listen(app.get('port'), function() {
 //   console.log('Node app is running on port', app.get('port'));
