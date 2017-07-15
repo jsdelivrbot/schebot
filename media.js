@@ -92,7 +92,7 @@ app.post('/getJson/:username/:num', function (req, res) {
           var timestamp_ct = moment.unix(created_time);
           var timestamp_ct_format = timestamp_ct.format('YYYY-MM-DD HH:mm:00');
 
-          var create_time_KR = momentTz.tz(timestamp_ct, "Asia/Seoul").format('YYYY-MM-DD HH:mm:00');
+          var create_time_KR = momentTz.tz(timestamp_ct, "Asia/Seoul").format('MMM DD YYYY, HH:mm');
           var currenttime = moment().format('YYYY-MM-DD HH:mm:00');
           var currentimeKR = momentTz.tz(currenttime, "Asia/Seoul");
           // console.log("create_time_KR : " + create_time_KR.format('YYYY-MM-DD HH:mm:00'));
@@ -113,7 +113,7 @@ app.post('/getJson/:username/:num', function (req, res) {
             //TEXT TWEET
             var fistfixedTxt = "[YOUNGJAESTAGRAM] ";
             var hashtagLink = "\n#영재 #GOT7\n" + link + "\n";
-            var timestmp = timestamp_ct.format('MMM DD YYYY, HH:mm');
+            var timestmp = create_time_KR;
             console.log("timestmp : " + timestmp);
 
             var txtLeft = 140 - fistfixedTxt.length - hashtagLink.length - timestmp.length - 3;
