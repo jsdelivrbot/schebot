@@ -1,25 +1,16 @@
 var express = require('express');
 var http = require('http');
 var app = express();
-var api = require('instagram-node').instagram();
 var request = require("request");
+var fs = require('fs');
 var bodyParser = require('body-parser')
 var moment = require('moment')
 var momentTz = require('moment-timezone');
+var CronJob = require('cron').CronJob;
+
+var TwitterPackage = require('twitter');
 
 
-var InstagramAPI = require('instagram-api');
-var accessToken = '55502361.179b7e3.aadfa417c1584a3cb64dc6c8b45816f6';//'23612221.3fcb46b.348431486f3a4fb85081d5242db9ca1c';
-var instagramAPI = new InstagramAPI(accessToken);
-
-
-const InstagramNodeApi = require('instagram-node-api');
-const instagramNodeApi = new InstagramNodeApi(accessToken);
-
-
-Instagram = require('instagram-node-lib');
-Instagram.set('client_id', '179b7e3894764c9dad6bdce62d422949');
-Instagram.set('client_secret', 'ba85a46e88db41919aa22fcc175324a8');
 
 
 
@@ -35,9 +26,7 @@ app.use(bodyParser.urlencoded({
   extended: true
 }));
 
-/**bodyParser.json(options)
- * Parses the text as JSON and exposes the resulting object on req.body.
- */
+
 app.use(bodyParser.json());
 
 app.get('/', function (request, response) {
@@ -45,138 +34,356 @@ app.get('/', function (request, response) {
 });
 
 
-// app.configure(function() {
-//   // The usual... 
-// });
+var download = function (uri, filename, callback) {
+  request.head(uri, function (err, res, body) {
+    console.log('content-type:', res.headers['content-type']);
+    console.log('content-length:', res.headers['content-length']);
 
-var Clients = {
-  client_id: '179b7e3894764c9dad6bdce62d422949',
-  client_secret: 'ba85a46e88db41919aa22fcc175324a8'
-};
-api.use(Clients);
-var redirect_uri = 'https://afternoon-coast-78677.herokuapp.com/handleauth';
-
-
-exports.authorize_user = function (req, res) {
-  res.redirect(api.get_authorization_url(redirect_uri, { scope: ['basic+public_content'] }));
-};
-
-exports.handleauth = function (req, res) {
-  api.authorize_user(req.query.code, redirect_uri, function (err, result) {
-    if (err) {
-      console.log(err.body);
-      res.send("denied");
-    } else {
-      console.log('Yay! Access token is ' + result.access_token);
-
-      // api.use({ access_token: result.access_token });
-      api.add_user_subscription('https://afternoon-coast-78677.herokuapp.com/user', { verify_token: result.access_token }, function (err, result, remaining, limit) {
-        if (err) res.send(err);
-        if (!err) res.send(result);
-      });
-      // res.send('You made it!! access_token is ' + result.access_token);
-    }
+    request(uri).pipe(fs.createWriteStream(`./public/media/${filename}`)).on('close', callback);
   });
 };
 
-// This is where you would initially send users to authorize 
-app.get('/authorize_user', exports.authorize_user);
-// This is your redirect URI 
-app.get('/handleauth', exports.handleauth);
+
+
+app.post('/getJson/:username/:num', function (req, res) {
+  var job = new CronJob({
+    cronTime: '00 * * * * *',
+    onTick: function () {
+      /*
+       * Runs every weekday (Monday through Friday)
+       * at 11:30:00 AM. It does not run on Saturday
+       * or Sunday.
+       */
+
+      var num = req.params.num;
+      var username = req.params.username;
+      var url = `https://www.instagram.com/${username}/media/`;
+      request({
+        url: url,
+        json: true
+      }, function (error, response, body) {
+
+        if (!error && response.statusCode === 200) {
+          //RECENT PICTURE
+          var itemLen = body.items.length;
+          console.log("itemLen " + itemLen);
+
+          var type = body.items[num].type;
+          var link = body.items[num].link;
+          var code = body.items[num].code;
+
+
+          //CAPTION
+          var txtcaption
+          var Chkcaption = body.items[num].caption;
+          if (Chkcaption !== null) {
+            txtcaption = body.items[num].caption.text;
+          }
+          if (Chkcaption == null) {
+            txtcaption = "";
+          }
+          console.log(txtcaption);
+
+
+
+
+          //CHECK TIME
+          var created_time = body.items[num].created_time;
+          var timestamp_ct = moment.unix(created_time);
+          var timestamp_ct_format = timestamp_ct.format('YYYY-MM-DD HH:mm:00');
+
+          var create_time_KR = momentTz.tz(timestamp_ct, "Asia/Seoul").format('MMM DD YYYY, HH:mm');
+          var currenttime = moment().format('YYYY-MM-DD HH:mm:00');
+          var currentimeKR = momentTz.tz(currenttime, "Asia/Seoul");
+          // console.log("create_time_KR : " + create_time_KR.format('YYYY-MM-DD HH:mm:00'));
+          // console.log("current time : " + currenttime);
+          // console.log("currenttimeKR : " + currentimeKR.format('YYYY-MM-DD HH:mm:00'))
+
+          var lastMin = moment().subtract(1, 'minute').format('YYYY-MM-DD HH:mm:00');
+          var lastMin_KR = momentTz.tz(lastMin, "Asia/Seoul").format('YYYY-MM-DD HH:mm:00');
+          console.log("last min : " + lastMin);
+          // console.log("last min KR : " + lastMin_KR);
+         console.log("timestamp_ct_format : " + timestamp_ct_format);
+          // console.log("create_time_KR : " + create_time_KR);
+          var chkDate = moment(timestamp_ct_format).isSame(lastMin); // true
+          console.log(chkDate);
+          if (chkDate == true) {
+            console.log("---- New Post ---")
+
+            //TEXT TWEET
+            var fistfixedTxt = "[YOUNGJAESTAGRAM] ";
+            var hashtagLink = "\n#영재 #GOT7\n" + link + "\n";
+            var timestmp = create_time_KR;
+            console.log("timestmp : " + timestmp);
+
+            var txtLeft = 140 - fistfixedTxt.length - hashtagLink.length - timestmp.length - 3;
+            console.log("txtLeft : " + txtLeft);
+
+            var igcaption;
+            if (txtcaption.length > txtLeft) {
+              console.log("-- ig caption too long -- ")
+              igcaption = txtcaption.substring(0, txtLeft) + "...";
+            }
+            if (txtcaption.length <= txtLeft) {
+              console.log("-- ig caption NOT too long -- ")
+              igcaption = txtcaption;
+            }
+            console.log("IG CAPTION : " + igcaption);
+
+            var total_msg_tweet = fistfixedTxt + igcaption + hashtagLink + timestmp;
+            console.log("total_msg_tweet :\n" + total_msg_tweet)
+
+
+
+
+
+            //IMAGE TYPE
+            if (type == "image") {
+              //IMAGE URL
+              var url = body.items[num].images.standard_resolution.url;
+              console.log("url :  " + url);
+
+              var stream = request(url).pipe(fs.createWriteStream(`./public/media/${code}.jpg`));
+              stream.on('finish', function () {
+                console.log('---stream done---')
+                //POST TWITTER
+                console.log("start tweet image");
+                var secret = require("./auth");
+                var Twitter = new TwitterPackage(secret);
+                var data = require('fs').readFileSync(`./public/media/${code}.jpg`);
+                Twitter.post('media/upload', { media: data }, function (error, media, response) {
+                  if (!error) {
+                    console.log(media);
+                    var status = {
+                      status: total_msg_tweet,
+                      media_ids: media.media_id_string // Pass the media id string
+                    }
+                    // console.log(media.media_id_string);
+                    Twitter.post('statuses/update', status, function (error, tweet, response) {
+                      if (!error) {
+                        console.log("done");
+                      }
+                    });
+
+                  } if (error) {
+                    console.log(error);
+                  }
+                });
+              });
+            }
+
+
+
+            //VIDEO TYPE
+            if (type == "video") {
+              var url = body.items[num].videos.standard_resolution.url;
+              console.log("url : " + url);
+
+              var stream = request(url).pipe(fs.createWriteStream(`./public/media/${code}.mp4`));
+              stream.on('finish', function () {
+                console.log('---stream done---')
+
+
+                //POST TWITTER
+                console.log("start tweet video");
+                var secret = require("./auth");
+                var client = new TwitterPackage(secret);
+
+                var pathToMovie = `./public/media/${code}.mp4`;
+                var mediaType = 'video/mp4'; // `'image/gifvideo/mp4'` is also supported
+                var mediaData = require('fs').readFileSync(pathToMovie);
+                var mediaSize = require('fs').statSync(pathToMovie).size;
+                console.log(mediaType, mediaData, mediaSize)
+
+
+                initUpload() // Declare that you wish to upload some media
+                  .then(appendUpload) // Send the data for the media
+                  .then(finalizeUpload) // Declare that you are done uploading chunks
+                  .then(mediaId => {
+                    // You now have an uploaded movie/animated gif
+                    // that you can reference in Tweets, e.g. `update/statuses`
+                    // will take a `mediaIds` param.
+                    var status = {
+                      status: total_msg_tweet,
+                      media_ids: mediaId // Pass the media id string
+                    }
+                    console.log("Media ID is : " + mediaId);
+                    var secret = require("./auth");
+                    var Twitter = new TwitterPackage(secret);
+                    Twitter.post('statuses/update', status, function (error, tweet, response) {
+                      if (!error) {
+                        console.log("done");
+                      }
+                    });
+
+                  });
+
+                /**
+                 * Step 1 of 3: Initialize a media upload
+                 * @return Promise resolving to String mediaId
+                 */
+                function initUpload() {
+                  return makePost('media/upload', {
+                    command: 'INIT',
+                    total_bytes: mediaSize,
+                    media_type: mediaType,
+                  }).then(data => data.media_id_string);
+                }
+
+                /**
+                 * Step 2 of 3: Append file chunk
+                 * @param String mediaId    Reference to media object being uploaded
+                 * @return Promise resolving to String mediaId (for chaining)
+                 */
+                function appendUpload(mediaId) {
+                  return makePost('media/upload', {
+                    command: 'APPEND',
+                    media_id: mediaId,
+                    media: mediaData,
+                    segment_index: 0
+                  }).then(data => mediaId);
+                }
+
+                /**
+                 * Step 3 of 3: Finalize upload
+                 * @param String mediaId   Reference to media
+                 * @return Promise resolving to mediaId (for chaining)
+                 */
+                function finalizeUpload(mediaId) {
+                  return makePost('media/upload', {
+                    command: 'FINALIZE',
+                    media_id: mediaId
+                  }).then(data => mediaId);
+                }
+
+                /**
+                 * (Utility function) Send a POST request to the Twitter API
+                 * @param String endpoint  e.g. 'statuses/upload'
+                 * @param Object params    Params object to send
+                 * @return Promise         Rejects if response is error
+                 */
+                function makePost(endpoint, params) {
+                  return new Promise((resolve, reject) => {
+                    client.post(endpoint, params, (error, data, response) => {
+                      if (error) {
+                        reject(error);
+                      } else {
+                        resolve(data);
+                      }
+                    });
+                  });
+                }
+
+              });
+            }
+
+
+
+
+            //TYPE CAROUSEL
+            if (type == "carousel") {
+              var carouselLen = body.items[num].carousel_media.length;
+              // console.log("carouselLen : " + carouselLen);
+              // console.log(body.items[num].carousel_media[1].images.standard_resolution.url)
+              var allData = [];
+              var mediaIDSet = [];
+              var c, i;
+              for (c = 0; c < carouselLen; c++) {
+                if (body.items[num].carousel_media[c].type == "image") {
+                  var carouselURL = body.items[num].carousel_media[c].images.standard_resolution.url;
+                  var stream = request(carouselURL).pipe(fs.createWriteStream(`./public/media/${code}_${c}.jpg`));
+                  var readfile = require('fs').readFileSync(`./public/media/${code}_${c}.jpg`)
+                  allData.push(readfile);
+                  if (c == carouselLen - 1) {
+                    //Tweet Photo
+                    console.log("---start tweet---")
+                    stream.on('finish', function () {
+                      var secret = require("./auth");
+                      var Twitter = new TwitterPackage(secret);
+                      for (i = 0; i < allData.length; i++) {
+                        /* loop code */
+                        console.log(allData.length);
+                        Twitter.post('media/upload', { media: allData }, function (error, media, response) {
+                          if (!error) {
+
+                            mediaIDSet.push(media.media_id_string);
+                            console.log("mediaID Set : " + mediaIDSet);
+                            if (mediaIDSet.length == allData.length) { // Last Item => finish 
+                              console.log("i finish");
+                              var status = {
+                                status: total_msg_tweet,
+                                media_ids: `${mediaIDSet}` // Pass the media id string
+                              }
+                              // console.log(media.media_id_string);
+                              Twitter.post('statuses/update', status, function (error, tweet, response) {
+                                if (!error) {
+                                  console.log("done");
+                                }
+                              });
+                            }
+
+                          } if (error) {
+                            console.log(error);
+                          }
+                        });
+                      }
+                    });
+                  }
+
+
+
+
+                } if (body.items[num].carousel_media[c].type = "video") {
+                  /* Do Video Function */
+                }
+              }
+
+
+
+              // var carousel2 = body.items[num].carousel_media[1].images.standard_resolution.url;
+              // var carousel3 = body.items[num].carousel_media[2].images.standard_resolution.url;
+              // var carousel4 = body.items[num].carousel_media[3].images.standard_resolution.url;
+              // // console.log(carousel2, carousel3, carousel4);
+              // request(carousel2).pipe(fs.createWriteStream(`./public/media/${carousel2}.jpg`));
+              // request(carousel3).pipe(fs.createWriteStream(`./public/media/${carousel3}.jpg`));
+              // var stream = request(carousel4).pipe(fs.createWriteStream(`./public/media/${carousel3}.jpg`));
+              // stream.on('finish', function () {
+
+
+              // 
+              // var data2 = require('fs').readFileSync(`./public/media/2.jpg`);
+              // var data3 = require('fs').readFileSync(`./public/media/3.jpg`);
+              // var data4 = require('fs').readFileSync(`./public/media/4.jpg`);
+
+              // var allData = [data2, data3, data4];
+
+
+
+
+
+
+
+
+
+            }
+          }
+
+        }
+      })
+    },
+    start: false,
+    timeZone: 'Asia/Seoul'
+  });
+  job.start();
+   res.sendStatus(200);
+});
+
 
 http.createServer(app).listen(app.get('port'), function () {
   console.log("Express server listening on port " + app.get('port'));
 });
 
-app.post('/url', function (req, res) {
-  var hub_chanllenge = req.query['hub.challenge'];
-  // var verify_token = req.params.hub.verify_token;
-  console.log(hub_chanllenge);
-  console.log("call back")
-  res.send(hub_chanllenge);
-});
 
-app.get('/url', function (req, res) {
-  var hub_chanllenge = req.query['hub.challenge'];
-  // var verify_token = req.params.hub.verify_token;
-  console.log(hub_chanllenge);
-  console.log("call back")
-  res.send(hub_chanllenge);
-});
+function DownloadMedia(url, code, callback) {
 
-app.post('/test', function (req, res) {
-  var test = req.body[0].value;
-  console.log(test);
-});
-
-app.get('/media', function (req, res) {
-  instagramNodeApi.user('333cyj333');
-  instagramNodeApi.on('data', (profile, meta, remaining, limit, result) => {
-    console.log(profile);
-  });
-  // instagramNodeApi.usersSelf();
-  // instagramNodeApi.on('data', (profile, meta, remaining, limit, result) => {
-  //     console.log(profile);
-  // });
-});
-
-app.get('/subscribe', function (request, response) {
-  Instagram.subscriptions.handshake(request, response);
-});
-
-app.get('/getJson', function (req, res) {
-  var url = 'https://www.instagram.com/333cyj333/media/';
-  request({
-    url: url,
-    json: true
-  }, function (error, response, body) {
-
-    if (!error && response.statusCode === 200) {
-      //RECENT PICTURE
-      var itemLen = body.items.length;
-      console.log(itemLen);
-
-      var type = body.items[0].type;
-      var link = body.items[0].link;
-      //IMAGE TYPE
-      if (type == "image") {
-        //IMAGE URL
-        var url = body.items[0].images.standard_resolution.url;
-        console.log("url :  " + url);
-
-
-        //CAPTION
-        var txtcaption
-        var Chkcaption = body.items[0].caption;
-        if (Chkcaption !== null) {
-          txtcaption = body.items[0].caption.text;
-        }
-        if (Chkcaption == null) {
-          txtcaption = "";
-        }
-        console.log(txtcaption);
-      }
-
-
-      //CHECK TIME
-      var created_time = body.items[0].created_time;
-      var timestamp_ct = moment.unix(created_time);
-      var currenttime = moment().format();
-      var currentimeKR = momentTz.tz(currenttime, "Asia/Seoul");
-      console.log("current time : " + currenttime);
-      console.log("currenttimeKR : " + currentimeKR.format('YYYY-MM-DD HH:mm'))
-      var lastMin = currentimeKR.subtract(1, 'minute').format('YYYY-MM-DD HH:mm');
-      console.log("last min : " + lastMin);
-      res.send(timestamp_ct) // Print the json response
-      console.log("post created : " + timestamp_ct.format('YYYY-MM-DD HH:mm'));
-
-    }
-  })
-});
-
-
-// app.listen(app.get('port'), function() {
-//   console.log('Node app is running on port', app.get('port'));
-// });
-
-
+}
