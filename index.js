@@ -107,7 +107,7 @@ app.post('/getJson/:username/:num', function (req, res) {
 
           // console.log("create_time_KR : " + create_time_KR);
           var chkDate = moment(timestamp_ct_format).isSame(lastMin); // true
-          res.send(timestamp_ct_format + lastMin);
+          // res.send(timestamp_ct_format + lastMin);
           console.log(chkDate);
           if (chkDate == true) {
             console.log("---- New Post ---")
@@ -377,7 +377,7 @@ app.post('/getJson/:username/:num', function (req, res) {
     timeZone: 'Asia/Seoul'
   });
   job.start();
-  //  res.sendStatus(200);
+   res.sendStatus(200);
 });
 
 
