@@ -109,7 +109,7 @@ app.post('/getJson/:username/:num', function (req, res) {
           var chkDate = moment(timestamp_ct_format).isSame(lastMin); // true
           res.send(timestamp_ct_format + lastMin);
           console.log(chkDate);
-          if (chkDate == true) {
+          if (chkDate == false) {
             console.log("---- New Post ---")
 
             //TEXT TWEET
