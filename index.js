@@ -46,9 +46,9 @@ var download = function (uri, filename, callback) {
 
 
 app.post('/getJson/:username/:num', function (req, res) {
-  // var job = new CronJob({
-  //   cronTime: '00 * * * * *',
-  //   onTick: function () {
+  var job = new CronJob({
+    cronTime: '00 * * * * *',
+    onTick: function () {
       /*
        * Runs every weekday (Monday through Friday)
        * at 11:30:00 AM. It does not run on Saturday
@@ -109,7 +109,7 @@ app.post('/getJson/:username/:num', function (req, res) {
           var chkDate = moment(timestamp_ct_format).isSame(lastMin); // true
           res.send(timestamp_ct_format + lastMin);
           console.log(chkDate);
-          if (chkDate == false) {
+          if (chkDate == true) {
             console.log("---- New Post ---")
 
             //TEXT TWEET
@@ -372,11 +372,11 @@ app.post('/getJson/:username/:num', function (req, res) {
 
         }
       })
-    // },
-//     start: false,
-//     timeZone: 'Asia/Seoul'
-//   });
-//   job.start();
+    },
+    start: false,
+    timeZone: 'Asia/Seoul'
+  });
+  job.start();
   //  res.sendStatus(200);
 });
 
