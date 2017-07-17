@@ -64,7 +64,7 @@ app.post('/getJson/:username/:num', function (req, res) {
   var username = req.params.username;
   var url = `https://www.instagram.com/${username}/media/`;
 
-  agenda.define('igapi', function (job, done) {
+  agenda.define('startapi', function (job, done) {
     var newdate = moment.tz(new Date(), "Asia/Bangkok");
     console.log(newdate.format());
 
@@ -392,7 +392,7 @@ app.post('/getJson/:username/:num', function (req, res) {
   agenda.on('ready', function () {
     var datenow = new Date();
     console.log(datenow);
-    agenda.every(`* * * * * `, 'igapi', { time: new Date(), timezone: 'Asia/Bangkok' });
+    agenda.every(`* * * * * `, 'startapi', { time: new Date(), timezone: 'Asia/Bangkok' });
     agenda.start();
   });
 
