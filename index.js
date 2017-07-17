@@ -11,12 +11,7 @@ var CronJob = require('cron').CronJob;
 var TwitterPackage = require('twitter');
 
 var Agenda = require('agenda');
-const uri = "mongodb://admin:admin@wacoalvoice-shard-00-00-w0akm.mongodb.net:27017,wacoalvoice-shard-00-01-w0akm.mongodb.net:27017,wacoalvoice-shard-00-02-w0akm.mongodb.net:27017/wacoalvoice?ssl=true&replicaSet=wacoalvoice-shard-0&authSource=admin";
-const agenda = new Agenda({
-  db: {
-    address: uri
-  }
-});
+
 
 
 app.set('port', (process.env.PORT || 5000));
@@ -59,17 +54,21 @@ app.post('/getJson/:username/:num', function (req, res) {
    * at 11:30:00 AM. It does not run on Saturday
    * or Sunday.
    */
-
+  const uri = "mongodb://admin:admin@wacoalvoice-shard-00-00-w0akm.mongodb.net:27017,wacoalvoice-shard-00-01-w0akm.mongodb.net:27017,wacoalvoice-shard-00-02-w0akm.mongodb.net:27017/wacoalvoice?ssl=true&replicaSet=wacoalvoice-shard-0&authSource=admin";
+  const agenda = new Agenda({
+    db: {
+      address: uri
+    }
+  });
   var num = req.params.num;
   var username = req.params.username;
   var url = `https://www.instagram.com/${username}/media/`;
 
-  agenda.define('startapi', function (job, done) {
+  agenda.define('checkupdate', function (job, done) {
     var newdate = moment.tz(new Date(), "Asia/Bangkok");
     console.log(newdate.format());
 
     //START
-
     request({
       url: url,
       json: true
@@ -371,14 +370,6 @@ app.post('/getJson/:username/:num', function (req, res) {
 
             // var allData = [data2, data3, data4];
 
-
-
-
-
-
-
-
-
           }
         }
 
@@ -392,7 +383,7 @@ app.post('/getJson/:username/:num', function (req, res) {
   agenda.on('ready', function () {
     var datenow = new Date();
     console.log(datenow);
-    agenda.every(`* * * * * `, 'startapi', { time: new Date(), timezone: 'Asia/Bangkok' });
+    agenda.every(`* * * * *`, 'checkupdate', { time: new Date() });
     agenda.start();
   });
 
