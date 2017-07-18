@@ -43,9 +43,16 @@ var download = function (uri, filename, callback) {
   });
 };
 
+app.post('/watchfile', function (req, res) {
+  fs.watchFile('carousel.json', (curr, prev) => {
+    console.log(`the current mtime is: ${curr.mtime}`);
+    console.log(`the previous mtime was: ${prev.mtime}`);
+    
+  });
+  res.sendStatus(200);
+});
 
-
-app.post('/getJson/:username/:num', function (req, res) {
+app.post('/getJson/:username/:num/:jobname', function (req, res) {
   // var job = new CronJob({
   //   cronTime: '00 * * * * *',
   //   onTick: function () {
@@ -60,6 +67,7 @@ app.post('/getJson/:username/:num', function (req, res) {
       address: uri
     }
   });
+  var jobname = req.params.jobname;
   var num = req.params.num;
   var username = req.params.username;
   var url = `https://www.instagram.com/${username}/media/`;
@@ -67,7 +75,9 @@ app.post('/getJson/:username/:num', function (req, res) {
   agenda.define('checkupdate', function (job, done) {
     var newdate = moment.tz(new Date(), "Asia/Bangkok");
     console.log(newdate.format());
-
+    var agenda_data = job.attrs.data;
+    var previouscode = agenda_data.code;
+    console.log("Previous Code : " + previouscode);
     //START
     request({
       url: url,
@@ -118,6 +128,7 @@ app.post('/getJson/:username/:num', function (req, res) {
 
         // console.log("create_time_KR : " + create_time_KR);
         var chkDate = moment(timestamp_ct_format).isSame(lastMin); // true
+
         // res.send(timestamp_ct_format + lastMin);
         console.log(chkDate);
         if (chkDate == true) {
@@ -383,7 +394,8 @@ app.post('/getJson/:username/:num', function (req, res) {
   agenda.on('ready', function () {
     var datenow = new Date();
     console.log(datenow);
-    agenda.every(`* * * * *`, 'checkupdate', { time: new Date() });
+    var code = "";
+    agenda.every(`0,5,10,15,20,25,30,35,40,45,50,55 * * * *`, jobname, { time: new Date(), code: code });
     agenda.start();
   });
 
