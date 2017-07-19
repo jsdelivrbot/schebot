@@ -1,5 +1,6 @@
 var express = require('express');
 var http = require('http');
+var https = require('https');
 var app = express();
 var request = require("request");
 var fs = require('fs');
@@ -11,6 +12,69 @@ var CronJob = require('cron').CronJob;
 var TwitterPackage = require('twitter');
 
 var Agenda = require('agenda');
+
+
+
+
+
+var url = 'https://www.instagram.com/333cyj333/media/';
+var cacheFile = './public/media/cachefile.json';
+var connectedSockets = [];
+
+
+
+function fetchJson() {
+  https.get(url, function (res) {
+    body = '';
+
+    res.on('data', function (data) {
+      body += data;
+    });
+
+    res.on('end', function () {
+      fs.writeFileSync(cacheFile, body);
+      setTimeout(fetchJson, 60000); // Fetch it again in a second
+    });
+  })
+}
+
+fetchJson(); // Start fetching to our JSON cache
+
+// Start watching our cache file
+fs.watch(cacheFile, function (event, filename) {
+  if (event == 'change') {
+    console.log("-- File Change -- ")
+    fs.readFile('./public/media/cachefile.json', function (err, data) {
+      if (!err) {
+        connectedSockets.forEach(function (socket) {
+          socket.emit('data', JSON.parse(data));//JSON.parse(data)
+          console.log("-- emited data --")
+        });
+      }
+
+    });
+  }
+});
+
+
+var io = require('socket.io').listen(27017);
+io.sockets.on('connection', function (socket) {
+  connectedSockets.push(socket);
+  console.log(connectedSockets)
+  console.log("-- Socket Connected -- ")
+
+  //test
+  socket.on('chat message', function (msg) {
+    io.emit('chat message', msg);
+
+  });
+
+
+});
+
+
+io.emit('msg', { for: 'everyone' });
+
 
 
 
@@ -43,14 +107,18 @@ var download = function (uri, filename, callback) {
   });
 };
 
-app.post('/watchfile', function (req, res) {
+
+
+app.get('/watchfile', function (req, res) {
   fs.watchFile('carousel.json', (curr, prev) => {
     console.log(`the current mtime is: ${curr.mtime}`);
     console.log(`the previous mtime was: ${prev.mtime}`);
-    
   });
   res.sendStatus(200);
 });
+
+
+
 
 app.post('/getJson/:username/:num/:jobname', function (req, res) {
   // var job = new CronJob({

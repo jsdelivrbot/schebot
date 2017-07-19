@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <% include ../partials/header.ejs %>
 </head>
@@ -8,25 +9,27 @@
 
   <% include ../partials/nav.ejs %>
 
-<div class="jumbotron text-center">
-  <div class="container">
-    <a href="/" class="lang-logo">
+    <div class="jumbotron text-center">
+      <div class="container">
+        <a href="/" class="lang-logo">
 
     </a>
-    <h1>Privacy And Policy</h1>
-    <p>
-     This bot made by Orangies for show Instagram media update from @333cyj333. Not for any commercial.
+        <h1>Privacy And Policy</h1>
+        <p>
+          This bot made by Orangies for show Instagram media update from @333cyj333. Not for any commercial.
+      </div>
     </div>
-</div>
 
 
-<script src="/socket.io/socket.io.js"></script>
-<script>
-  var socket = io.connect('http://localhost:3000');
-  socket.on('news', function (data) {
-    console.log(data);
-    socket.emit('my other event', { my: 'data' });
-  });
-</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script>
+    <script>
+      var socket = io.connect('http://10.11.2.80:27017');
+
+      socket.on('data', function (data) {
+        console.log(data);
+      });
+
+    </script>
 </body>
+
 </html>
