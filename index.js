@@ -56,8 +56,6 @@ fs.watch(cacheFile, function (event, filename) {
           socket.emit('data', JSON.parse(data));//JSON.parse(data)
           console.log("-- emited data --")
         });
-
-
       }
     });
 
@@ -140,11 +138,10 @@ function CheckMedia(num, username, url) {
     url: url,
     json: true
   }, function (error, response, body) {
-    console.log(response.statusCode)
     if (!error && response.statusCode === 200) {
       //RECENT PICTURE
       var itemLen = body.items.length;
-      console.log("itemLen " + itemLen);
+      console.log("itemLength :  " + itemLen);
 
       var type = body.items[num].type;
       var link = body.items[num].link;
@@ -160,7 +157,7 @@ function CheckMedia(num, username, url) {
       if (Chkcaption == null) {
         txtcaption = "";
       }
-      console.log(txtcaption);
+      console.log("CAPTION : "  + txtcaption);
 
 
 
