@@ -23,8 +23,8 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script>
     <script>
-      var socket = io.connect('http://10.11.2.80:27017');
-
+      // var socket = io.connect('http://10.11.2.80:27017');
+      var socket = io.connect('https://afternoon-coast-78677.herokuapp.com:27017');
       socket.on('data', function (data) {
         console.log(data);
       });

@@ -7,7 +7,6 @@ var fs = require('fs');
 var bodyParser = require('body-parser')
 var moment = require('moment')
 var momentTz = require('moment-timezone');
-var CronJob = require('cron').CronJob;
 
 var TwitterPackage = require('twitter');
 
@@ -33,7 +32,7 @@ function fetchJson() {
 
     res.on('end', function () {
       fs.writeFileSync(cacheFile, body);
-      setTimeout(fetchJson, 60000); // Fetch it again in a second
+      setTimeout(fetchJson, 60000); // Fetch it again in a 60 second
     });
   })
 }
@@ -51,8 +50,13 @@ fs.watch(cacheFile, function (event, filename) {
           console.log("-- emited data --")
         });
       }
-
     });
+
+    //CheckMedia if filechange
+    var num = 0;
+    var username = "333cyj333";
+    var url = "instagram.com/"+username+"/media";
+    CheckMedia(num,username,url);
   }
 });
 
@@ -63,17 +67,8 @@ io.sockets.on('connection', function (socket) {
   console.log(connectedSockets)
   console.log("-- Socket Connected -- ")
 
-  //test
-  socket.on('chat message', function (msg) {
-    io.emit('chat message', msg);
-
-  });
-
-
 });
 
-
-io.emit('msg', { for: 'everyone' });
 
 
 
@@ -109,43 +104,32 @@ var download = function (uri, filename, callback) {
 
 
 
-app.get('/watchfile', function (req, res) {
-  fs.watchFile('carousel.json', (curr, prev) => {
-    console.log(`the current mtime is: ${curr.mtime}`);
-    console.log(`the previous mtime was: ${prev.mtime}`);
-  });
+// app.get('/watchfile', function (req, res) {
+//   fs.watchFile('carousel.json', (curr, prev) => {
+//     console.log(`the current mtime is: ${curr.mtime}`);
+//     console.log(`the previous mtime was: ${prev.mtime}`);
+//   });
+//   res.sendStatus(200);
+// });
+
+
+
+
+app.post('/getJson/:username/:num', function (req, res) {
+ 
+  // var jobname = req.params.jobname;
+  var num = req.params.num;
+  var username = req.params.username;
+  var url = `https://www.instagram.com/${username}/media/`;
+
+  CheckMedia(num,username,url);
   res.sendStatus(200);
 });
 
 
 
+function CheckMedia(num,username,url){
 
-app.post('/getJson/:username/:num/:jobname', function (req, res) {
-  // var job = new CronJob({
-  //   cronTime: '00 * * * * *',
-  //   onTick: function () {
-  /*
-   * Runs every weekday (Monday through Friday)
-   * at 11:30:00 AM. It does not run on Saturday
-   * or Sunday.
-   */
-  const uri = "mongodb://admin:admin@wacoalvoice-shard-00-00-w0akm.mongodb.net:27017,wacoalvoice-shard-00-01-w0akm.mongodb.net:27017,wacoalvoice-shard-00-02-w0akm.mongodb.net:27017/wacoalvoice?ssl=true&replicaSet=wacoalvoice-shard-0&authSource=admin";
-  const agenda = new Agenda({
-    db: {
-      address: uri
-    }
-  });
-  var jobname = req.params.jobname;
-  var num = req.params.num;
-  var username = req.params.username;
-  var url = `https://www.instagram.com/${username}/media/`;
-
-  // agenda.define('checkupdate', function (job, done) {
-    var newdate = moment.tz(new Date(), "Asia/Bangkok");
-    console.log(newdate.format());
-    // var agenda_data = job.attrs.data;
-    // var previouscode = agenda_data.code;
-    // console.log("Previous Code : " + previouscode);
     //START
     request({
       url: url,
@@ -199,7 +183,7 @@ app.post('/getJson/:username/:num/:jobname', function (req, res) {
 
         // res.send(timestamp_ct_format + lastMin);
         console.log(chkDate);
-        if (chkDate == false) {
+        if (chkDate == true) {
           console.log("---- New Post ---")
 
           //TEXT TWEET
@@ -454,28 +438,9 @@ app.post('/getJson/:username/:num/:jobname', function (req, res) {
 
       }
     })
+
     //END
-
-  //   done();
-  // });
-
-  // agenda.on('ready', function () {
-  //   var datenow = new Date();
-  //   console.log(datenow);
-  //   var code = "";
-  //   agenda.every(`0,5,10,15,20,25,30,35,40,45,50,55 * * * *`, jobname, { time: new Date(), code: code });
-  //   agenda.start();
-  // });
-
-
-  //   },
-  //   start: false,
-  //   timeZone: 'Asia/Seoul'
-  // });
-  // job.start();
-  res.sendStatus(200);
-});
-
+}
 
 http.createServer(app).listen(app.get('port'), function () {
   console.log("Express server listening on port " + app.get('port'));
