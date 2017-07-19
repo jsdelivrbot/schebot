@@ -23,6 +23,13 @@ var connectedSockets = [];
 
 
 function fetchJson() {
+  //CheckMedia if file change
+  console.log("start check media");
+  var num = 0;
+  var username = "333cyj333";
+  var url = `https://www.instagram.com/${username}/media/`;
+  CheckMedia(num, username, url);
+
   https.get(url, function (res) {
     body = '';
 
@@ -49,14 +56,12 @@ fs.watch(cacheFile, function (event, filename) {
           socket.emit('data', JSON.parse(data));//JSON.parse(data)
           console.log("-- emited data --")
         });
+
+
       }
     });
 
-    //CheckMedia if filechange
-    var num = 0;
-    var username = "333cyj333";
-    var url = "instagram.com/"+username+"/media";
-    CheckMedia(num,username,url);
+
   }
 });
 
@@ -116,330 +121,330 @@ var download = function (uri, filename, callback) {
 
 
 app.post('/getJson/:username/:num', function (req, res) {
- 
+
   // var jobname = req.params.jobname;
   var num = req.params.num;
   var username = req.params.username;
   var url = `https://www.instagram.com/${username}/media/`;
 
-  CheckMedia(num,username,url);
+  CheckMedia(num, username, url);
   res.sendStatus(200);
 });
 
 
 
-function CheckMedia(num,username,url){
+function CheckMedia(num, username, url) {
 
-    //START
-    request({
-      url: url,
-      json: true
-    }, function (error, response, body) {
+  //START
+  request({
+    url: url,
+    json: true
+  }, function (error, response, body) {
+    console.log(response.statusCode)
+    if (!error && response.statusCode === 200) {
+      //RECENT PICTURE
+      var itemLen = body.items.length;
+      console.log("itemLen " + itemLen);
 
-      if (!error && response.statusCode === 200) {
-        //RECENT PICTURE
-        var itemLen = body.items.length;
-        console.log("itemLen " + itemLen);
-
-        var type = body.items[num].type;
-        var link = body.items[num].link;
-        var code = body.items[num].code;
+      var type = body.items[num].type;
+      var link = body.items[num].link;
+      var code = body.items[num].code;
 
 
-        //CAPTION
-        var txtcaption
-        var Chkcaption = body.items[num].caption;
-        if (Chkcaption !== null) {
-          txtcaption = body.items[num].caption.text;
+      //CAPTION
+      var txtcaption
+      var Chkcaption = body.items[num].caption;
+      if (Chkcaption !== null) {
+        txtcaption = body.items[num].caption.text;
+      }
+      if (Chkcaption == null) {
+        txtcaption = "";
+      }
+      console.log(txtcaption);
+
+
+
+
+      //CHECK TIME
+      var created_time = body.items[num].created_time;
+      var timestamp_ct = moment.unix(created_time);
+      var timestamp_ct_format = timestamp_ct.format('YYYY-MM-DD HH:mm:00');
+
+      var create_time_KR = momentTz.tz(timestamp_ct, "Asia/Seoul").format('MMM DD YYYY, HH:mm');
+      var currenttime = moment().format('YYYY-MM-DD HH:mm:00');
+      var currentimeKR = momentTz.tz(currenttime, "Asia/Seoul");
+      // console.log("create_time_KR : " + create_time_KR.format('YYYY-MM-DD HH:mm:00'));
+      // console.log("current time : " + currenttime);
+      // console.log("currenttimeKR : " + currentimeKR.format('YYYY-MM-DD HH:mm:00'))
+
+      var lastMin = moment().subtract(1, 'minute').format('YYYY-MM-DD HH:mm:00');
+      var lastMin_KR = momentTz.tz(lastMin, "Asia/Seoul").format('YYYY-MM-DD HH:mm:00');
+      console.log("last min : " + lastMin);
+      // console.log("last min KR : " + lastMin_KR);
+      console.log("timestamp_ct_format : " + timestamp_ct_format);
+
+      // console.log("create_time_KR : " + create_time_KR);
+      var chkDate = moment(timestamp_ct_format).isSame(lastMin); // true
+
+      // res.send(timestamp_ct_format + lastMin);
+      console.log(chkDate);
+      if (chkDate == true) {
+        console.log("---- New Post ---")
+
+        //TEXT TWEET
+        var fistfixedTxt = "[YOUNGJAESTAGRAM] ";
+        var hashtagLink = "\n#영재 #GOT7\n" + link + "\n";
+        var timestmp = create_time_KR;
+        console.log("timestmp : " + timestmp);
+
+        var txtLeft = 140 - fistfixedTxt.length - hashtagLink.length - timestmp.length - 3;
+        console.log("txtLeft : " + txtLeft);
+
+        var igcaption;
+        if (txtcaption.length > txtLeft) {
+          console.log("-- ig caption too long -- ")
+          igcaption = txtcaption.substring(0, txtLeft) + "...";
         }
-        if (Chkcaption == null) {
-          txtcaption = "";
+        if (txtcaption.length <= txtLeft) {
+          console.log("-- ig caption NOT too long -- ")
+          igcaption = txtcaption;
         }
-        console.log(txtcaption);
+        console.log("IG CAPTION : " + igcaption);
 
-
-
-
-        //CHECK TIME
-        var created_time = body.items[num].created_time;
-        var timestamp_ct = moment.unix(created_time);
-        var timestamp_ct_format = timestamp_ct.format('YYYY-MM-DD HH:mm:00');
-
-        var create_time_KR = momentTz.tz(timestamp_ct, "Asia/Seoul").format('MMM DD YYYY, HH:mm');
-        var currenttime = moment().format('YYYY-MM-DD HH:mm:00');
-        var currentimeKR = momentTz.tz(currenttime, "Asia/Seoul");
-        // console.log("create_time_KR : " + create_time_KR.format('YYYY-MM-DD HH:mm:00'));
-        // console.log("current time : " + currenttime);
-        // console.log("currenttimeKR : " + currentimeKR.format('YYYY-MM-DD HH:mm:00'))
-
-        var lastMin = moment().subtract(1, 'minute').format('YYYY-MM-DD HH:mm:00');
-        var lastMin_KR = momentTz.tz(lastMin, "Asia/Seoul").format('YYYY-MM-DD HH:mm:00');
-        console.log("last min : " + lastMin);
-        // console.log("last min KR : " + lastMin_KR);
-        console.log("timestamp_ct_format : " + timestamp_ct_format);
-
-        // console.log("create_time_KR : " + create_time_KR);
-        var chkDate = moment(timestamp_ct_format).isSame(lastMin); // true
-
-        // res.send(timestamp_ct_format + lastMin);
-        console.log(chkDate);
-        if (chkDate == true) {
-          console.log("---- New Post ---")
-
-          //TEXT TWEET
-          var fistfixedTxt = "[YOUNGJAESTAGRAM] ";
-          var hashtagLink = "\n#영재 #GOT7\n" + link + "\n";
-          var timestmp = create_time_KR;
-          console.log("timestmp : " + timestmp);
-
-          var txtLeft = 140 - fistfixedTxt.length - hashtagLink.length - timestmp.length - 3;
-          console.log("txtLeft : " + txtLeft);
-
-          var igcaption;
-          if (txtcaption.length > txtLeft) {
-            console.log("-- ig caption too long -- ")
-            igcaption = txtcaption.substring(0, txtLeft) + "...";
-          }
-          if (txtcaption.length <= txtLeft) {
-            console.log("-- ig caption NOT too long -- ")
-            igcaption = txtcaption;
-          }
-          console.log("IG CAPTION : " + igcaption);
-
-          var total_msg_tweet = fistfixedTxt + igcaption + hashtagLink + timestmp;
-          console.log("total_msg_tweet :\n" + total_msg_tweet)
+        var total_msg_tweet = fistfixedTxt + igcaption + hashtagLink + timestmp;
+        console.log("total_msg_tweet :\n" + total_msg_tweet)
 
 
 
 
 
-          //IMAGE TYPE
-          if (type == "image") {
-            //IMAGE URL
-            var url = body.items[num].images.standard_resolution.url;
-            console.log("url :  " + url);
+        //IMAGE TYPE
+        if (type == "image") {
+          //IMAGE URL
+          var url = body.items[num].images.standard_resolution.url;
+          console.log("url :  " + url);
 
-            var stream = request(url).pipe(fs.createWriteStream(`./public/media/${code}.jpg`));
-            stream.on('finish', function () {
-              console.log('---stream done---')
-              //POST TWITTER
-              console.log("start tweet image");
-              var secret = require("./auth");
-              var Twitter = new TwitterPackage(secret);
-              var data = require('fs').readFileSync(`./public/media/${code}.jpg`);
-              Twitter.post('media/upload', { media: data }, function (error, media, response) {
-                if (!error) {
-                  console.log(media);
-                  var status = {
-                    status: total_msg_tweet,
-                    media_ids: media.media_id_string // Pass the media id string
-                  }
-                  // console.log(media.media_id_string);
-                  Twitter.post('statuses/update', status, function (error, tweet, response) {
-                    if (!error) {
-                      console.log("done");
-                    }
-                  });
-
-                } if (error) {
-                  console.log(error);
+          var stream = request(url).pipe(fs.createWriteStream(`./public/media/${code}.jpg`));
+          stream.on('finish', function () {
+            console.log('---stream done---')
+            //POST TWITTER
+            console.log("start tweet image");
+            var secret = require("./auth");
+            var Twitter = new TwitterPackage(secret);
+            var data = require('fs').readFileSync(`./public/media/${code}.jpg`);
+            Twitter.post('media/upload', { media: data }, function (error, media, response) {
+              if (!error) {
+                console.log(media);
+                var status = {
+                  status: total_msg_tweet,
+                  media_ids: media.media_id_string // Pass the media id string
                 }
+                // console.log(media.media_id_string);
+                Twitter.post('statuses/update', status, function (error, tweet, response) {
+                  if (!error) {
+                    console.log("done");
+                  }
+                });
+
+              } if (error) {
+                console.log(error);
+              }
+            });
+          });
+        }
+
+
+
+        //VIDEO TYPE
+        if (type == "video") {
+          var url = body.items[num].videos.standard_resolution.url;
+          console.log("url : " + url);
+
+          var stream = request(url).pipe(fs.createWriteStream(`./public/media/${code}.mp4`));
+          stream.on('finish', function () {
+            console.log('---stream done---')
+
+
+            //POST TWITTER
+            console.log("start tweet video");
+            var secret = require("./auth");
+            var client = new TwitterPackage(secret);
+
+            var pathToMovie = `./public/media/${code}.mp4`;
+            var mediaType = 'video/mp4'; // `'image/gifvideo/mp4'` is also supported
+            var mediaData = require('fs').readFileSync(pathToMovie);
+            var mediaSize = require('fs').statSync(pathToMovie).size;
+            console.log(mediaType, mediaData, mediaSize)
+
+
+            initUpload() // Declare that you wish to upload some media
+              .then(appendUpload) // Send the data for the media
+              .then(finalizeUpload) // Declare that you are done uploading chunks
+              .then(mediaId => {
+                // You now have an uploaded movie/animated gif
+                // that you can reference in Tweets, e.g. `update/statuses`
+                // will take a `mediaIds` param.
+                var status = {
+                  status: total_msg_tweet,
+                  media_ids: mediaId // Pass the media id string
+                }
+                console.log("Media ID is : " + mediaId);
+                var secret = require("./auth");
+                var Twitter = new TwitterPackage(secret);
+                Twitter.post('statuses/update', status, function (error, tweet, response) {
+                  if (!error) {
+                    console.log("done");
+                  }
+                });
+
               });
-            });
-          }
 
-
-
-          //VIDEO TYPE
-          if (type == "video") {
-            var url = body.items[num].videos.standard_resolution.url;
-            console.log("url : " + url);
-
-            var stream = request(url).pipe(fs.createWriteStream(`./public/media/${code}.mp4`));
-            stream.on('finish', function () {
-              console.log('---stream done---')
-
-
-              //POST TWITTER
-              console.log("start tweet video");
-              var secret = require("./auth");
-              var client = new TwitterPackage(secret);
-
-              var pathToMovie = `./public/media/${code}.mp4`;
-              var mediaType = 'video/mp4'; // `'image/gifvideo/mp4'` is also supported
-              var mediaData = require('fs').readFileSync(pathToMovie);
-              var mediaSize = require('fs').statSync(pathToMovie).size;
-              console.log(mediaType, mediaData, mediaSize)
-
-
-              initUpload() // Declare that you wish to upload some media
-                .then(appendUpload) // Send the data for the media
-                .then(finalizeUpload) // Declare that you are done uploading chunks
-                .then(mediaId => {
-                  // You now have an uploaded movie/animated gif
-                  // that you can reference in Tweets, e.g. `update/statuses`
-                  // will take a `mediaIds` param.
-                  var status = {
-                    status: total_msg_tweet,
-                    media_ids: mediaId // Pass the media id string
-                  }
-                  console.log("Media ID is : " + mediaId);
-                  var secret = require("./auth");
-                  var Twitter = new TwitterPackage(secret);
-                  Twitter.post('statuses/update', status, function (error, tweet, response) {
-                    if (!error) {
-                      console.log("done");
-                    }
-                  });
-
-                });
-
-              /**
-               * Step 1 of 3: Initialize a media upload
-               * @return Promise resolving to String mediaId
-               */
-              function initUpload() {
-                return makePost('media/upload', {
-                  command: 'INIT',
-                  total_bytes: mediaSize,
-                  media_type: mediaType,
-                }).then(data => data.media_id_string);
-              }
-
-              /**
-               * Step 2 of 3: Append file chunk
-               * @param String mediaId    Reference to media object being uploaded
-               * @return Promise resolving to String mediaId (for chaining)
-               */
-              function appendUpload(mediaId) {
-                return makePost('media/upload', {
-                  command: 'APPEND',
-                  media_id: mediaId,
-                  media: mediaData,
-                  segment_index: 0
-                }).then(data => mediaId);
-              }
-
-              /**
-               * Step 3 of 3: Finalize upload
-               * @param String mediaId   Reference to media
-               * @return Promise resolving to mediaId (for chaining)
-               */
-              function finalizeUpload(mediaId) {
-                return makePost('media/upload', {
-                  command: 'FINALIZE',
-                  media_id: mediaId
-                }).then(data => mediaId);
-              }
-
-              /**
-               * (Utility function) Send a POST request to the Twitter API
-               * @param String endpoint  e.g. 'statuses/upload'
-               * @param Object params    Params object to send
-               * @return Promise         Rejects if response is error
-               */
-              function makePost(endpoint, params) {
-                return new Promise((resolve, reject) => {
-                  client.post(endpoint, params, (error, data, response) => {
-                    if (error) {
-                      reject(error);
-                    } else {
-                      resolve(data);
-                    }
-                  });
-                });
-              }
-
-            });
-          }
-
-
-
-
-          //TYPE CAROUSEL
-          if (type == "carousel") {
-            var carouselLen = body.items[num].carousel_media.length;
-            // console.log("carouselLen : " + carouselLen);
-            // console.log(body.items[num].carousel_media[1].images.standard_resolution.url)
-            var allData = [];
-            var mediaIDSet = [];
-            var c, i;
-            for (c = 0; c < carouselLen; c++) {
-              if (body.items[num].carousel_media[c].type == "image") {
-                var carouselURL = body.items[num].carousel_media[c].images.standard_resolution.url;
-                var stream = request(carouselURL).pipe(fs.createWriteStream(`./public/media/${code}_${c}.jpg`));
-                var readfile = require('fs').readFileSync(`./public/media/${code}_${c}.jpg`)
-                allData.push(readfile);
-                if (c == carouselLen - 1) {
-                  //Tweet Photo
-                  console.log("---start tweet---")
-                  stream.on('finish', function () {
-                    var secret = require("./auth");
-                    var Twitter = new TwitterPackage(secret);
-                    for (i = 0; i < allData.length; i++) {
-                      /* loop code */
-                      console.log(allData.length);
-                      Twitter.post('media/upload', { media: allData }, function (error, media, response) {
-                        if (!error) {
-
-                          mediaIDSet.push(media.media_id_string);
-                          console.log("mediaID Set : " + mediaIDSet);
-                          if (mediaIDSet.length == allData.length) { // Last Item => finish 
-                            console.log("i finish");
-                            var status = {
-                              status: total_msg_tweet,
-                              media_ids: `${mediaIDSet}` // Pass the media id string
-                            }
-                            // console.log(media.media_id_string);
-                            Twitter.post('statuses/update', status, function (error, tweet, response) {
-                              if (!error) {
-                                console.log("done");
-                              }
-                            });
-                          }
-
-                        } if (error) {
-                          console.log(error);
-                        }
-                      });
-                    }
-                  });
-                }
-
-
-
-
-              } if (body.items[num].carousel_media[c].type = "video") {
-                /* Do Video Function */
-              }
+            /**
+             * Step 1 of 3: Initialize a media upload
+             * @return Promise resolving to String mediaId
+             */
+            function initUpload() {
+              return makePost('media/upload', {
+                command: 'INIT',
+                total_bytes: mediaSize,
+                media_type: mediaType,
+              }).then(data => data.media_id_string);
             }
 
+            /**
+             * Step 2 of 3: Append file chunk
+             * @param String mediaId    Reference to media object being uploaded
+             * @return Promise resolving to String mediaId (for chaining)
+             */
+            function appendUpload(mediaId) {
+              return makePost('media/upload', {
+                command: 'APPEND',
+                media_id: mediaId,
+                media: mediaData,
+                segment_index: 0
+              }).then(data => mediaId);
+            }
 
+            /**
+             * Step 3 of 3: Finalize upload
+             * @param String mediaId   Reference to media
+             * @return Promise resolving to mediaId (for chaining)
+             */
+            function finalizeUpload(mediaId) {
+              return makePost('media/upload', {
+                command: 'FINALIZE',
+                media_id: mediaId
+              }).then(data => mediaId);
+            }
 
-            // var carousel2 = body.items[num].carousel_media[1].images.standard_resolution.url;
-            // var carousel3 = body.items[num].carousel_media[2].images.standard_resolution.url;
-            // var carousel4 = body.items[num].carousel_media[3].images.standard_resolution.url;
-            // // console.log(carousel2, carousel3, carousel4);
-            // request(carousel2).pipe(fs.createWriteStream(`./public/media/${carousel2}.jpg`));
-            // request(carousel3).pipe(fs.createWriteStream(`./public/media/${carousel3}.jpg`));
-            // var stream = request(carousel4).pipe(fs.createWriteStream(`./public/media/${carousel3}.jpg`));
-            // stream.on('finish', function () {
+            /**
+             * (Utility function) Send a POST request to the Twitter API
+             * @param String endpoint  e.g. 'statuses/upload'
+             * @param Object params    Params object to send
+             * @return Promise         Rejects if response is error
+             */
+            function makePost(endpoint, params) {
+              return new Promise((resolve, reject) => {
+                client.post(endpoint, params, (error, data, response) => {
+                  if (error) {
+                    reject(error);
+                  } else {
+                    resolve(data);
+                  }
+                });
+              });
+            }
 
-
-            // 
-            // var data2 = require('fs').readFileSync(`./public/media/2.jpg`);
-            // var data3 = require('fs').readFileSync(`./public/media/3.jpg`);
-            // var data4 = require('fs').readFileSync(`./public/media/4.jpg`);
-
-            // var allData = [data2, data3, data4];
-
-          }
+          });
         }
 
-      }
-    })
 
-    //END
+
+
+        //TYPE CAROUSEL
+        if (type == "carousel") {
+          var carouselLen = body.items[num].carousel_media.length;
+          // console.log("carouselLen : " + carouselLen);
+          // console.log(body.items[num].carousel_media[1].images.standard_resolution.url)
+          var allData = [];
+          var mediaIDSet = [];
+          var c, i;
+          for (c = 0; c < carouselLen; c++) {
+            if (body.items[num].carousel_media[c].type == "image") {
+              var carouselURL = body.items[num].carousel_media[c].images.standard_resolution.url;
+              var stream = request(carouselURL).pipe(fs.createWriteStream(`./public/media/${code}_${c}.jpg`));
+              var readfile = require('fs').readFileSync(`./public/media/${code}_${c}.jpg`)
+              allData.push(readfile);
+              if (c == carouselLen - 1) {
+                //Tweet Photo
+                console.log("---start tweet---")
+                stream.on('finish', function () {
+                  var secret = require("./auth");
+                  var Twitter = new TwitterPackage(secret);
+                  for (i = 0; i < allData.length; i++) {
+                    /* loop code */
+                    console.log(allData.length);
+                    Twitter.post('media/upload', { media: allData }, function (error, media, response) {
+                      if (!error) {
+
+                        mediaIDSet.push(media.media_id_string);
+                        console.log("mediaID Set : " + mediaIDSet);
+                        if (mediaIDSet.length == allData.length) { // Last Item => finish 
+                          console.log("i finish");
+                          var status = {
+                            status: total_msg_tweet,
+                            media_ids: `${mediaIDSet}` // Pass the media id string
+                          }
+                          // console.log(media.media_id_string);
+                          Twitter.post('statuses/update', status, function (error, tweet, response) {
+                            if (!error) {
+                              console.log("done");
+                            }
+                          });
+                        }
+
+                      } if (error) {
+                        console.log(error);
+                      }
+                    });
+                  }
+                });
+              }
+
+
+
+
+            } if (body.items[num].carousel_media[c].type = "video") {
+              /* Do Video Function */
+            }
+          }
+
+
+
+          // var carousel2 = body.items[num].carousel_media[1].images.standard_resolution.url;
+          // var carousel3 = body.items[num].carousel_media[2].images.standard_resolution.url;
+          // var carousel4 = body.items[num].carousel_media[3].images.standard_resolution.url;
+          // // console.log(carousel2, carousel3, carousel4);
+          // request(carousel2).pipe(fs.createWriteStream(`./public/media/${carousel2}.jpg`));
+          // request(carousel3).pipe(fs.createWriteStream(`./public/media/${carousel3}.jpg`));
+          // var stream = request(carousel4).pipe(fs.createWriteStream(`./public/media/${carousel3}.jpg`));
+          // stream.on('finish', function () {
+
+
+          // 
+          // var data2 = require('fs').readFileSync(`./public/media/2.jpg`);
+          // var data3 = require('fs').readFileSync(`./public/media/3.jpg`);
+          // var data4 = require('fs').readFileSync(`./public/media/4.jpg`);
+
+          // var allData = [data2, data3, data4];
+
+        }
+      }
+
+    }
+  })
+
+  //END
 }
 
 http.createServer(app).listen(app.get('port'), function () {
