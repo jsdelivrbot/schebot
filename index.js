@@ -140,12 +140,12 @@ app.post('/getJson/:username/:num/:jobname', function (req, res) {
   var username = req.params.username;
   var url = `https://www.instagram.com/${username}/media/`;
 
-  agenda.define('checkupdate', function (job, done) {
+  // agenda.define('checkupdate', function (job, done) {
     var newdate = moment.tz(new Date(), "Asia/Bangkok");
     console.log(newdate.format());
-    var agenda_data = job.attrs.data;
-    var previouscode = agenda_data.code;
-    console.log("Previous Code : " + previouscode);
+    // var agenda_data = job.attrs.data;
+    // var previouscode = agenda_data.code;
+    // console.log("Previous Code : " + previouscode);
     //START
     request({
       url: url,
@@ -199,7 +199,7 @@ app.post('/getJson/:username/:num/:jobname', function (req, res) {
 
         // res.send(timestamp_ct_format + lastMin);
         console.log(chkDate);
-        if (chkDate == true) {
+        if (chkDate == false) {
           console.log("---- New Post ---")
 
           //TEXT TWEET
@@ -456,16 +456,16 @@ app.post('/getJson/:username/:num/:jobname', function (req, res) {
     })
     //END
 
-    done();
-  });
+  //   done();
+  // });
 
-  agenda.on('ready', function () {
-    var datenow = new Date();
-    console.log(datenow);
-    var code = "";
-    agenda.every(`0,5,10,15,20,25,30,35,40,45,50,55 * * * *`, jobname, { time: new Date(), code: code });
-    agenda.start();
-  });
+  // agenda.on('ready', function () {
+  //   var datenow = new Date();
+  //   console.log(datenow);
+  //   var code = "";
+  //   agenda.every(`0,5,10,15,20,25,30,35,40,45,50,55 * * * *`, jobname, { time: new Date(), code: code });
+  //   agenda.start();
+  // });
 
 
   //   },
