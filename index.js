@@ -7,11 +7,39 @@ var fs = require('fs');
 var bodyParser = require('body-parser')
 var moment = require('moment')
 var momentTz = require('moment-timezone');
-
 var TwitterPackage = require('twitter');
-
 var Agenda = require('agenda');
+const socketIO = require('socket.io');
 
+
+
+
+
+
+
+
+
+
+
+app.set('port', (process.env.PORT || 5000));
+// app.use(express.bodyParser());
+app.use(express.static(__dirname + '/public'));
+
+// views is directory for all template files
+app.set('views', __dirname + '/views');
+app.set('view engine', 'ejs');
+
+app.use(bodyParser.urlencoded({
+  extended: true
+}));
+
+
+app.use(bodyParser.json());
+var server = http.createServer(app);
+
+server.listen(app.get('port'), function () {
+  console.log("Express server listening on port " + app.get('port'));
+});
 
 
 
@@ -64,36 +92,33 @@ fs.watch(cacheFile, function (event, filename) {
 });
 
 
-var io = require('socket.io').listen(27017);
-io.sockets.on('connection', function (socket) {
+// var io = require('socket.io').listen(27017);
+// io.sockets.on('connection', function (socket) {
+//   connectedSockets.push(socket);
+//   console.log(connectedSockets)
+//   console.log("-- Socket Connected -- ")
+
+// });
+
+
+const io = socketIO(server);
+io.on('connection', (socket) => {
+  console.log('\n\nClient connected');
   connectedSockets.push(socket);
-  console.log(connectedSockets)
-  console.log("-- Socket Connected -- ")
-
+  socket.on('disconnect', () => console.log('\n\nClient disconnected'));
 });
+// setInterval(() => io.emit('time', new Date().toTimeString()), 1000);
 
 
-
-
-
-app.set('port', (process.env.PORT || 5000));
-// app.use(express.bodyParser());
-app.use(express.static(__dirname + '/public'));
-
-// views is directory for all template files
-app.set('views', __dirname + '/views');
-app.set('view engine', 'ejs');
-
-app.use(bodyParser.urlencoded({
-  extended: true
-}));
-
-
-app.use(bodyParser.json());
 
 app.get('/', function (request, response) {
   response.render('pages/index');
 });
+
+
+
+
+
 
 
 var download = function (uri, filename, callback) {
@@ -444,9 +469,8 @@ function CheckMedia(num, username, url) {
   //END
 }
 
-http.createServer(app).listen(app.get('port'), function () {
-  console.log("Express server listening on port " + app.get('port'));
-});
+
+
 
 
 function DownloadMedia(url, code, callback) {
