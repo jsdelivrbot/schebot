@@ -46,10 +46,10 @@ var twitter_oauth =  {
   token: '703675814127149057-kOwkJZv2I13y8XMOAK25PsveujO0nVk',
   token_secret: '1qCnQTtfuXEq9q3SVzqbYGgxmbvykytY98MQBeiE5w81M'
 }
-console.log(twitter_oauth);
+// console.log(twitter_oauth);
 var WEBHOOK_URL = 'https://gotyjstagram.herokuapp.com/'
 
-
+// var auth = require('./auth');
 // request options
 var request_options = {
   url: 'https://api.twitter.com/1.1/account_activity/webhooks.json',
