@@ -56,7 +56,7 @@ server.listen(app.get('port'), function () {
 
 
 // app.post('/fetchJson/:username', function (req, res) {
-var username = "cyjonly";
+var username = "333cyj333";
 var url = `https://www.instagram.com/${username}/media/`;
 var cacheFile = './public/media/cachefile.json';
 var connectedSockets = [];
@@ -65,7 +65,7 @@ function fetchJson() {
   //CheckMedia if file change
   console.log("start check media");
   var num = 0;
-  var username = "cyjonly";
+  var username = "333cyj333";
   var url = `https://www.instagram.com/${username}/media/`;
   CheckMedia(num, username, url);
 
