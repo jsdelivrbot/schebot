@@ -47,7 +47,7 @@ var twitter_oauth =  {
   token_secret: '1qCnQTtfuXEq9q3SVzqbYGgxmbvykytY98MQBeiE5w81M'
 }
 console.log(twitter_oauth);
-var WEBHOOK_URL = 'http://localhost:5000/webhooks/twitter'
+var WEBHOOK_URL = 'https://gotyjstagram.herokuapp.com/'
 
 
 // request options
@@ -127,7 +127,7 @@ function fetchJson() {
     });
   })
 }
-fetchJson(); // Start fetching to our JSON cache
+// fetchJson(); // Start fetching to our JSON cache
 
 // Start watching our cache file
 fs.watch(cacheFile, function (event, filename) {
