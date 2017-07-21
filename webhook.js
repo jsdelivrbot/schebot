@@ -26,7 +26,12 @@ var request_options = {
   }
 }
 
-// POST request to create webhook config
-request.post(request_options, function (error, response, body) {
+// // POST request to create webhook config
+// request.post(request_options, function (error, response, body) {
+//   console.log(body)
+// })
+
+// GET request to retreive webhook config
+request.get(request_options, function (error, response, body) {
   console.log(body)
 })
