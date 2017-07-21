@@ -44,52 +44,11 @@ server.listen(app.get('port'), function () {
 
 
 
-var url = 'https://www.instagram.com/333cyj333/media/';
-var cacheFile = './public/media/cachefile.json';
-var connectedSockets = [];
 
 
 
-function fetchJson() {
-  //CheckMedia if file change
-  console.log("start check media");
-  var num = 0;
-  var username = "333cyj333";
-  var url = `https://www.instagram.com/${username}/media/`;
-  // CheckMedia(num, username, url);
-
-  https.get(url, function (res) {
-    body = '';
-
-    res.on('data', function (data) {
-      body += data;
-    });
-
-    res.on('end', function () {
-      fs.writeFileSync(cacheFile, body);
-      setTimeout(fetchJson, 60000); // Fetch it again in a 60 second
-    });
-  })
-}
-
-fetchJson(); // Start fetching to our JSON cache
-
-// Start watching our cache file
-fs.watch(cacheFile, function (event, filename) {
-  if (event == 'change') {
-    console.log("-- File Change -- ")
-    fs.readFile('./public/media/cachefile.json', function (err, data) {
-      if (!err) {
-        connectedSockets.forEach(function (socket) {
-          socket.emit('data', JSON.parse(data));//JSON.parse(data)
-          console.log("-- emited data --")
-        });
-      }
-    });
 
 
-  }
-});
 
 
 // var io = require('socket.io').listen(27017);
@@ -101,15 +60,62 @@ fs.watch(cacheFile, function (event, filename) {
 // });
 
 
-const io = socketIO(server);
-io.on('connection', (socket) => {
-  console.log('\n\nClient connected');
-  connectedSockets.push(socket);
-  socket.on('disconnect', () => console.log('\n\nClient disconnected'));
+
+
+app.post('/fetchJson', function (req, res) {
+  var url = 'https://www.instagram.com/333cyj333/media/';
+  var cacheFile = './public/media/cachefile.json';
+  var connectedSockets = [];
+
+  function fetchJson() {
+    //CheckMedia if file change
+    console.log("start check media");
+    var num = 0;
+    var username = "333cyj333";
+    var url = `https://www.instagram.com/${username}/media/`;
+    // CheckMedia(num, username, url);
+
+    https.get(url, function (res) {
+      body = '';
+
+      res.on('data', function (data) {
+        body += data;
+      });
+
+      res.on('end', function () {
+        fs.writeFileSync(cacheFile, body);
+        setTimeout(fetchJson, 60000); // Fetch it again in a 60 second
+      });
+    })
+  }
+  fetchJson(); // Start fetching to our JSON cache
+
+  // Start watching our cache file
+  fs.watch(cacheFile, function (event, filename) {
+    if (event == 'change') {
+      console.log("-- File Change -- ")
+      fs.readFile('./public/media/cachefile.json', function (err, data) {
+        if (!err) {
+          connectedSockets.forEach(function (socket) {
+            socket.emit('data', JSON.parse(data));//JSON.parse(data)
+            console.log("-- emited data --")
+          });
+        }
+      });
+
+
+    }
+  });
+  const io = socketIO(server);
+  io.on('connection', (socket) => {
+    console.log('\n\nClient connected');
+    connectedSockets.push(socket);
+    socket.on('disconnect', () => console.log('\n\nClient disconnected'));
+  });
+  // setInterval(() => io.emit('time', new Date().toTimeString()), 1000);
+  res.sendStatus(400);
+
 });
-// setInterval(() => io.emit('time', new Date().toTimeString()), 1000);
-
-
 
 app.get('/', function (request, response) {
   response.render('pages/index');
@@ -299,7 +305,8 @@ function CheckMedia(num, username, url) {
 
         //TYPE CAROUSEL
         if (type == "carousel") {
-          var carouselLen = body.items[num].carousel_media.length;
+          console.log("TYPE CAROUSEL");
+          var carouselLen = body.items[num].carousel_media.length - 4;
           // console.log("carouselLen : " + carouselLen);
           // console.log(body.items[num].carousel_media[1].images.standard_resolution.url)
           var allData = [];
@@ -308,8 +315,11 @@ function CheckMedia(num, username, url) {
           for (c = 0; c < carouselLen; c++) {
             if (body.items[num].carousel_media[c].type == "image") {
               var carouselURL = body.items[num].carousel_media[c].images.standard_resolution.url;
-              var stream = request(carouselURL).pipe(fs.createWriteStream(`./public/media/${code}_${c}.jpg`));
-              var readfile = require('fs').readFileSync(`./public/media/${code}_${c}.jpg`)
+              var stream = request(carouselURL).pipe(fs.createWriteStream(`./public/media/${code}_${c + 1}.jpg`));
+              // stream.on('finish', function () {
+
+              // });
+              var readfile = require('fs').readFileSync(`./public/media/${code}_${c+1}.jpg`)
               allData.push(readfile);
               if (c == carouselLen - 1) {
                 //Tweet Photo
