@@ -41,13 +41,13 @@ server.listen(app.get('port'), function () {
 
 // twitter authentication'
 var twitter_oauth =  {
-  consumer_key: 'vJ27ZMSVsI2mTAysw4B0pOt78',
-  consumer_secret: 'K4H06u5SmhUD5aijqlTvTpZaNYLOYkiS1yrODGOwFREiS9qEiD',
+  consumer_key: 'XPRMyf0XEgjKlAG1msgShdiFb',
+  consumer_secret: 'cZhBVhc17vNPxYav4m7BhuYGA9aNgId8WdmokzwBl66uEfY1XD',
   token: '703675814127149057-kOwkJZv2I13y8XMOAK25PsveujO0nVk',
   token_secret: '1qCnQTtfuXEq9q3SVzqbYGgxmbvykytY98MQBeiE5w81M'
 }
 // console.log(twitter_oauth);
-var WEBHOOK_URL = 'https://gotyjstagram.herokuapp.com/'
+var WEBHOOK_URL = 'https://gotyjstagram.herokuapp.com/webhooks/twitter'
 
 // var auth = require('./auth');
 // request options

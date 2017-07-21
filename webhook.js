@@ -11,7 +11,7 @@ var twitter_oauth =  {
   token_secret: '1qCnQTtfuXEq9q3SVzqbYGgxmbvykytY98MQBeiE5w81M'
 }
 
-var WEBHOOK_URL = 'https://gotyjstagram.herokuapp.com/'
+var WEBHOOK_URL = 'https://gotyjstagram.herokuapp.com/webhooks/twitter'
 
 
 // request options
