@@ -14,13 +14,6 @@ const socketIO = require('socket.io');
 
 
 
-
-
-
-
-
-
-
 app.set('port', (process.env.PORT || 5000));
 // app.use(express.bodyParser());
 app.use(express.static(__dirname + '/public'));
@@ -62,60 +55,69 @@ server.listen(app.get('port'), function () {
 
 
 
-app.post('/fetchJson', function (req, res) {
-  var url = 'https://www.instagram.com/333cyj333/media/';
-  var cacheFile = './public/media/cachefile.json';
-  var connectedSockets = [];
+// app.post('/fetchJson/:username', function (req, res) {
+var username = "cyjonly";
+var url = `https://www.instagram.com/${username}/media/`;
+var cacheFile = './public/media/cachefile.json';
+var connectedSockets = [];
 
-  function fetchJson() {
-    //CheckMedia if file change
-    console.log("start check media");
-    var num = 0;
-    var username = "333cyj333";
-    var url = `https://www.instagram.com/${username}/media/`;
-    // CheckMedia(num, username, url);
+function fetchJson() {
+  //CheckMedia if file change
+  console.log("start check media");
+  var num = 0;
+  var username = "cyjonly";
+  var url = `https://www.instagram.com/${username}/media/`;
+  CheckMedia(num, username, url);
 
-    https.get(url, function (res) {
-      body = '';
+  https.get(url, function (res) {
+    body = '';
 
-      res.on('data', function (data) {
-        body += data;
-      });
+    res.on('data', function (data) {
+      body += data;
+    });
 
-      res.on('end', function () {
-        fs.writeFileSync(cacheFile, body);
-        setTimeout(fetchJson, 60000); // Fetch it again in a 60 second
-      });
-    })
+    res.on('end', function () {
+      fs.writeFileSync(cacheFile, body);
+      setTimeout(fetchJson, 60000); // Fetch it again in a 60 second
+    });
+  })
+}
+fetchJson(); // Start fetching to our JSON cache
+
+// Start watching our cache file
+fs.watch(cacheFile, function (event, filename) {
+  if (event == 'change') {
+    console.log("-- File Change -- ")
+    fs.readFile('./public/media/cachefile.json', function (err, data) {
+      if (!err) {
+        connectedSockets.forEach(function (socket) {
+          socket.emit('data', JSON.parse(data));//JSON.parse(data)
+          console.log("-- emited data --")
+        });
+      }
+    });
+
+
   }
-  fetchJson(); // Start fetching to our JSON cache
-
-  // Start watching our cache file
-  fs.watch(cacheFile, function (event, filename) {
-    if (event == 'change') {
-      console.log("-- File Change -- ")
-      fs.readFile('./public/media/cachefile.json', function (err, data) {
-        if (!err) {
-          connectedSockets.forEach(function (socket) {
-            socket.emit('data', JSON.parse(data));//JSON.parse(data)
-            console.log("-- emited data --")
-          });
-        }
-      });
-
-
-    }
-  });
-  const io = socketIO(server);
-  io.on('connection', (socket) => {
-    console.log('\n\nClient connected');
-    connectedSockets.push(socket);
-    socket.on('disconnect', () => console.log('\n\nClient disconnected'));
-  });
-  // setInterval(() => io.emit('time', new Date().toTimeString()), 1000);
-  res.sendStatus(400);
-
 });
+const io = socketIO(server);
+io.on('connection', (socket) => {
+  console.log('\n\nClient connected');
+  connectedSockets.push(socket);
+  socket.on('disconnect', () => console.log('\n\nClient disconnected'));
+  socket.on("error", (err) => {
+    console.log(err);
+    socket.destroy();
+  });
+  socket.on('close', function (exception) {
+    console.log('SOCKET CLOSED');
+  })
+});
+
+// setInterval(() => io.emit('time', new Date().toTimeString()), 1000);
+// res.sendStatus(400);
+
+// });
 
 app.get('/', function (request, response) {
   response.render('pages/index');
@@ -319,7 +321,7 @@ function CheckMedia(num, username, url) {
               // stream.on('finish', function () {
 
               // });
-              var readfile = require('fs').readFileSync(`./public/media/${code}_${c+1}.jpg`)
+              var readfile = require('fs').readFileSync(`./public/media/${code}_${c + 1}.jpg`)
               allData.push(readfile);
               if (c == carouselLen - 1) {
                 //Tweet Photo
