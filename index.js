@@ -40,7 +40,7 @@ server.listen(app.get('port'), function () {
 //TEST WEBHOOK
 
 // twitter authentication'
-var twitter_oauth =  {
+var twitter_oauth = {
   consumer_key: 'XPRMyf0XEgjKlAG1msgShdiFb',
   consumer_secret: 'cZhBVhc17vNPxYav4m7BhuYGA9aNgId8WdmokzwBl66uEfY1XD',
   token: '703675814127149057-kOwkJZv2I13y8XMOAK25PsveujO0nVk',
@@ -71,7 +71,7 @@ request.post(request_options, function (error, response, body) {
 /**
  * Receives challenge response check (CRC)
  **/
-app.get('/webhooks/twitter', function(request, response) {
+app.get('/webhooks/twitter', function (request, response) {
 
   var crc_token = request.query.crc_token
 
@@ -81,7 +81,13 @@ app.get('/webhooks/twitter', function(request, response) {
     response_token: 'sha256=' + hash
   })
 })
+app.post('/webhooks/twitter', function (request, response) {
+  // Your custom bot logic will start here
 
+  console.log(request.body)
+
+  response.send('200 OK')
+});
 
 
 
