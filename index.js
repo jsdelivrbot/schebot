@@ -9,6 +9,8 @@ var moment = require('moment')
 var momentTz = require('moment-timezone');
 var TwitterPackage = require('twitter');
 var Agenda = require('agenda');
+var async = require('async');
+var forEach = require('async-foreach').forEach;
 const socketIO = require('socket.io');
 
 
@@ -33,68 +35,6 @@ var server = http.createServer(app);
 server.listen(app.get('port'), function () {
   console.log("Express server listening on port " + app.get('port'));
 });
-
-
-
-
-//TEST WEBHOOK
-
-// twitter authentication'
-var twitter_oauth = {
-  consumer_key: 'XPRMyf0XEgjKlAG1msgShdiFb',
-  consumer_secret: 'cZhBVhc17vNPxYav4m7BhuYGA9aNgId8WdmokzwBl66uEfY1XD',
-  token: '703675814127149057-kOwkJZv2I13y8XMOAK25PsveujO0nVk',
-  token_secret: '1qCnQTtfuXEq9q3SVzqbYGgxmbvykytY98MQBeiE5w81M'
-}
-// console.log(twitter_oauth);
-var WEBHOOK_URL = 'https://gotyjstagram.herokuapp.com/webhooks/twitter'
-
-// var auth = require('./auth');
-// request options
-var request_options = {
-  url: 'https://api.twitter.com/1.1/account_activity/webhooks.json',
-  oauth: twitter_oauth,
-  headers: {
-    'Content-type': 'application/x-www-form-urlencoded'
-  },
-  form: {
-    url: WEBHOOK_URL
-  }
-}
-
-// // POST request to create webhook config
-// request.post(request_options, function (error, response, body) {
-//   console.log(body)
-// })
-// GET request to retreive webhook config
-request.get(request_options, function (error, response, body) {
-  console.log(body)
-})
-
-
-
-
-/**
- * Receives challenge response check (CRC)
- **/
-app.get('/webhooks/twitter', function (request, response) {
-
-  var crc_token = request.query.crc_token
-
-  var hash = security.get_challenge_response(crc_token, twitter_config.consumer_secret)
-
-  response.send({
-    response_token: 'sha256=' + hash
-  })
-})
-app.post('/webhooks/twitter', function (request, response) {
-  // Your custom bot logic will start here
-
-  console.log(request.body)
-
-  response.send('200 OK')
-});
-
 
 
 
@@ -139,7 +79,7 @@ function fetchJson() {
     });
   })
 }
-// fetchJson(); // Start fetching to our JSON cache
+fetchJson(); // Start fetching to our JSON cache
 
 // Start watching our cache file
 fs.watch(cacheFile, function (event, filename) {
@@ -364,84 +304,150 @@ function CheckMedia(num, username, url) {
 
         //TYPE CAROUSEL
         if (type == "carousel") {
+          var txtLeft = 140 - fistfixedTxt.length - hashtagLink.length - timestmp.length - 3 - 5;
+          console.log("txtLeft : " + txtLeft);
+          var igcaption;
+          if (txtcaption.length > txtLeft) {
+            console.log("-- ig caption too long -- ")
+            igcaption = txtcaption.substring(0, txtLeft) + "...";
+          }
+          if (txtcaption.length <= txtLeft) {
+            console.log("-- ig caption NOT too long -- ")
+            igcaption = txtcaption;
+          }
+          console.log("IG CAPTION : " + igcaption);
+
+
+
+
           console.log("TYPE CAROUSEL");
-          var carouselLen = body.items[num].carousel_media.length - 4;
+          var carouselLen = body.items[num].carousel_media.length;
           // console.log("carouselLen : " + carouselLen);
           // console.log(body.items[num].carousel_media[1].images.standard_resolution.url)
           var allData = [];
+          var carouselURL_image = [];
+          var carouselURL_video = [];
           var mediaIDSet = [];
           var c, i;
           for (c = 0; c < carouselLen; c++) {
             if (body.items[num].carousel_media[c].type == "image") {
               var carouselURL = body.items[num].carousel_media[c].images.standard_resolution.url;
-              var stream = request(carouselURL).pipe(fs.createWriteStream(`./public/media/${code}_${c + 1}.jpg`));
-              // stream.on('finish', function () {
-
-              // });
-              var readfile = require('fs').readFileSync(`./public/media/${code}_${c + 1}.jpg`)
-              allData.push(readfile);
-              if (c == carouselLen - 1) {
-                //Tweet Photo
-                console.log("---start tweet---")
-                stream.on('finish', function () {
-                  var secret = require("./auth");
-                  var Twitter = new TwitterPackage(secret);
-                  for (i = 0; i < allData.length; i++) {
-                    /* loop code */
-                    console.log(allData.length);
-                    Twitter.post('media/upload', { media: allData }, function (error, media, response) {
-                      if (!error) {
-
-                        mediaIDSet.push(media.media_id_string);
-                        console.log("mediaID Set : " + mediaIDSet);
-                        if (mediaIDSet.length == allData.length) { // Last Item => finish 
-                          console.log("i finish");
-                          var status = {
-                            status: total_msg_tweet,
-                            media_ids: `${mediaIDSet}` // Pass the media id string
-                          }
-                          // console.log(media.media_id_string);
-                          Twitter.post('statuses/update', status, function (error, tweet, response) {
-                            if (!error) {
-                              console.log("done");
-                            }
-                          });
-                        }
-
-                      } if (error) {
-                        console.log(error);
-                      }
-                    });
-                  }
-                });
-              }
-
-
-
+              carouselURL_image.push(carouselURL);
 
             } if (body.items[num].carousel_media[c].type = "video") {
               /* Do Video Function */
             }
           }
+          console.log(" Carousel Length  :  " + carouselURL_image.length);
+          if (carouselURL_image.length < 5) {
+            console.log("carouselURL_image lower than 4");
+            var chkTweet = CarouselImageTweet(carouselURL_image, carouselURL_image.length, code, total_msg_tweet, function (callback) {
+              console.log(callback);
+            });
+          }
+          if (carouselURL_image.length == 5) {
+            console.log("carouselURL_IMAGE = 5")
+            var dataLength = carouselURL_image.length;
+            var newAllData = [];
+            var newAllData2 = [];
 
+            forEach(carouselURL_image, function (item, index, arr) {
+              // console.log("each", item, index, arr);
+              if (carouselURL_image.indexOf(item) < 3) {
+                newAllData.push(item);
+              } if (carouselURL_image.indexOf(item) >= 3) {
+                newAllData2.push(item);
+              }
+              // });
+            }, function () {
+              console.log("newAllData.length is : " + newAllData.length);
+              console.log("newAllData.length is : " + newAllData2.length);
+              var newAlldataLength = newAllData.length;
+              var newAlldataLength2 = newAllData2.length;
+              var total_msg_tweet = fistfixedTxt + igcaption + "(1/2)" + hashtagLink + timestmp;
+              var chkTweet = CarouselImageTweet(newAllData, newAlldataLength, code, total_msg_tweet, function (callback) {
+                console.log(callback);
+                if (callback == "done") {
+                  var total_msg_tweet = fistfixedTxt + igcaption + "(2/2)" + hashtagLink + timestmp;
+                  CarouselImageTweet(newAllData2, newAlldataLength2, code, total_msg_tweet, function(callback){
+                    console.log(callback);
+                  });
+                }
+              });
+            });
+          }
+          if (carouselURL_image.length > 5 && carouselURL_image.length < 9) {
+            console.log("carouselURL_image more then 5 but less than 9");
+            var dataLength = carouselURL_image.length;
+            var newAllData = [];
+            var newAllData2 = [];
 
-
-          // var carousel2 = body.items[num].carousel_media[1].images.standard_resolution.url;
-          // var carousel3 = body.items[num].carousel_media[2].images.standard_resolution.url;
-          // var carousel4 = body.items[num].carousel_media[3].images.standard_resolution.url;
-          // // console.log(carousel2, carousel3, carousel4);
-          // request(carousel2).pipe(fs.createWriteStream(`./public/media/${carousel2}.jpg`));
-          // request(carousel3).pipe(fs.createWriteStream(`./public/media/${carousel3}.jpg`));
-          // var stream = request(carousel4).pipe(fs.createWriteStream(`./public/media/${carousel3}.jpg`));
-          // stream.on('finish', function () {
-
-
-          // 
-          // var data2 = require('fs').readFileSync(`./public/media/2.jpg`);
-          // var data3 = require('fs').readFileSync(`./public/media/3.jpg`);
-          // var data4 = require('fs').readFileSync(`./public/media/4.jpg`);
-
-          // var allData = [data2, data3, data4];
+            forEach(carouselURL_image, function (item, index, arr) {
+              // console.log("each", item, index, arr);
+              if (carouselURL_image.indexOf(item) < 4) {
+                newAllData.push(item);
+              } if (carouselURL_image.indexOf(item) >= 4) {
+                newAllData2.push(item);
+              }
+              // });
+            }, function () {
+              console.log("newAllData.length is : " + newAllData.length);
+              console.log("newAllData.length is : " + newAllData2.length);
+              var newAlldataLength = newAllData.length;
+              var newAlldataLength2 = newAllData2.length;
+              var total_msg_tweet = fistfixedTxt + igcaption + "(1/2)" + hashtagLink + timestmp;
+              var chkTweet = CarouselImageTweet(newAllData, newAlldataLength, code, total_msg_tweet, function (callback) {
+                console.log(callback);
+                if (callback == "done") {
+                  var total_msg_tweet = fistfixedTxt + igcaption + "(2/2)" + hashtagLink + timestmp;
+                  var chkTweet2 = CarouselImageTweet(newAllData2, newAlldataLength2, code, total_msg_tweet, function (callback) {
+                    console.log(callback);
+                  });
+                }
+              });
+            });
+          }
+          if (carouselURL_image.length > 9) {
+            console.log("carouselURL_image more then 9");
+            var dataLength = carouselURL_image.length;
+            var newAllData = [];
+            var newAllData2 = [];
+            var newAllData3 = [];
+            forEach(carouselURL_image, function (item, index, arr) {
+              // console.log("each", item, index, arr);
+              if (carouselURL_image.indexOf(item) < 4) {
+                newAllData.push(item);
+              } if (carouselURL_image.indexOf(item) >= 4 && carouselURL_image.indexOf(item) < 7) {
+                newAllData2.push(item);
+              }
+              if (carouselURL_image.indexOf(item) >= 7) {
+                newAllData3.push(item);
+              }
+              // });
+            }, function () {
+              console.log("newAllData.length is : " + newAllData.length);
+              console.log("newAllData.length is : " + newAllData2.length);
+              var newAlldataLength = newAllData.length;
+              var newAlldataLength2 = newAllData2.length;
+              var newAlldataLength3 = newAllData3.length;
+              var total_msg_tweet = fistfixedTxt + igcaption + "(1/3)" + hashtagLink + timestmp;
+              var chkTweet = CarouselImageTweet(newAllData, newAlldataLength, code, total_msg_tweet, function (callback) {
+                console.log(callback);
+                if (callback == "done") {
+                  var total_msg_tweet = fistfixedTxt + igcaption + "(2/3)" + hashtagLink + timestmp;
+                  CarouselImageTweet(newAllData2, newAlldataLength2, code, total_msg_tweet, function (callback) {
+                    console.log(callback);
+                    if (callback == "done") {
+                      var total_msg_tweet = fistfixedTxt + igcaption + "(3/3)" + hashtagLink + timestmp;
+                      CarouselImageTweet(newAllData3, newAlldataLength3, code, total_msg_tweet, function (callback) {
+                        console.log(callback);
+                      });
+                    }
+                  });
+                }
+              });
+            });
+          }
 
         }
       }
@@ -657,5 +663,51 @@ VideoTweet.prototype.tweet = function () {
     data = JSON.parse(body)
 
     console.log(data);
+  });
+}
+
+
+
+
+function CarouselImageTweet(allData, allDataLength, code, total_msg_tweet, callback) {
+  var secret = require("./auth");
+  var Twitter = new TwitterPackage(secret);
+  console.log("------Start Carousel Image Function--------");
+  console.log(allData);
+  var mediaIDSet = [];
+  var data, stream;
+  forEach(allData, function (item, index, arr) {
+    var d = allData.indexOf(item) + 1;
+    if (allData.indexOf(item) < allDataLength) {
+      stream = request(item).pipe(fs.createWriteStream(`./public/media/${code}_${d}.jpg`));
+      stream.on('finish', function () {
+        data = require('fs').readFileSync(`./public/media/${code}_${d}.jpg`);
+        console.log(data);
+        Twitter.post('media/upload', { media: require('fs').readFileSync(`./public/media/${code}_${d}.jpg`) }, function (error, media, response) {
+          if (!error) {
+            mediaIDSet.push(media.media_id_string);
+            console.log("mediaID Set : " + mediaIDSet);
+            if (mediaIDSet.length == allDataLength) {
+              //TWEET MESSAGE
+              var status = {
+                status: total_msg_tweet,
+                media_ids: `${mediaIDSet}` // Pass the media id string
+              }
+              // console.log(media.media_id_string);
+              Twitter.post('statuses/update', status, function (error, tweet, response) {
+                if (!error) {
+                  // console.log("done");
+                  callback("done");
+                }
+              });
+            }
+          } if (error) {
+            console.log(error);
+          }
+        });
+
+      });
+    }
+
   });
 }
