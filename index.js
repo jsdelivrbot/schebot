@@ -122,10 +122,6 @@ app.get('/', function (request, response) {
 
 
 
-
-
-
-
 var download = function (uri, filename, callback) {
   request.head(uri, function (err, res, body) {
     console.log('content-type:', res.headers['content-type']);
@@ -317,9 +313,6 @@ function CheckMedia(num, username, url) {
           }
           console.log("IG CAPTION : " + igcaption);
 
-
-
-
           console.log("TYPE CAROUSEL");
           var carouselLen = body.items[num].carousel_media.length;
           // console.log("carouselLen : " + carouselLen);
@@ -334,13 +327,74 @@ function CheckMedia(num, username, url) {
               var carouselURL = body.items[num].carousel_media[c].images.standard_resolution.url;
               carouselURL_image.push(carouselURL);
 
-            } if (body.items[num].carousel_media[c].type = "video") {
+            } else if (body.items[num].carousel_media[c].type = "video") {
               /* Do Video Function */
+              var carouselVideoURL = body.items[num].carousel_media[c].videos.standard_resolution.url;
+              carouselURL_video.push(carouselVideoURL);
             }
           }
+
+          //Carousel Video
+          if (carouselURL_video.length > 0) {
+            /* Do Video Function */
+            forEach(carouselURL_video, function (item, index, arr) {
+              var numVid = index + 1;
+              console.log("num Vid : " + numVid);
+              var stream = request(item).pipe(fs.createWriteStream(`./public/media/${code}_${numVid}.mp4`));
+              stream.on('finish', function () {
+                console.log('---stream done---')
+                var idvid = carouselURL_video.indexOf(item) + 1;
+                if (carouselURL_image.length == 0) {
+                  var itemLen = carouselURL_video.length;
+                  var total_msg_tweet = fistfixedTxt + igcaption + `(${idvid}/${itemLen})` + hashtagLink + timestmp;
+                  var videoTweet = new VideoTweet({
+                    file_path: `./public/media/${code}_${numVid}.mp4`,
+                    tweet_text: total_msg_tweet
+                  });
+                }
+                if (carouselURL_image.length > 0 && carouselURL_image.length < 5) {
+                  //tweet of image has 1
+                  var itemLen = carouselURL_video.length + 1;
+                  var total_msg_tweet = fistfixedTxt + igcaption + `(${idvid}/${itemLen})` + hashtagLink + timestmp;
+                  var videoTweet = new VideoTweet({
+                    file_path: `./public/media/${code}_${numVid}.mp4`,
+                    tweet_text: total_msg_tweet
+                  });
+                }
+                if (carouselURL_image.length >= 5 && carouselURL_image.length < 9) {
+                  //tweet of video has 2
+                  var itemLen = carouselURL_video.length + 2;
+                  var total_msg_tweet = fistfixedTxt + igcaption + `(${idvid}/${itemLen})` + hashtagLink + timestmp;
+                  var videoTweet = new VideoTweet({
+                    file_path: `./public/media/${code}_${numVid}.mp4`,
+                    tweet_text: total_msg_tweet
+                  });
+                }
+                if (carouselURL_image.length >= 9) {
+                  //tweet of video has 3
+                  var itemLen = carouselURL_video.length + 3;
+                  var total_msg_tweet = fistfixedTxt + igcaption + `(${idvid}/${itemLen})` + hashtagLink + timestmp;
+                  var videoTweet = new VideoTweet({
+                    file_path: `./public/media/${code}_${numVid}.mp4`,
+                    tweet_text: total_msg_tweet
+                  });
+                }
+
+              });
+            });
+          }
+
+          //Carousel Images
           console.log(" Carousel Length  :  " + carouselURL_image.length);
-          if (carouselURL_image.length < 5) {
+          if (carouselURL_image.length > 0 && carouselURL_image.length < 5) {
             console.log("carouselURL_image lower than 4");
+            if (carouselURL_video.length > 0) {
+              var itemLen = carouselURL_video.length + carouselURL_image.length;
+              var idImg = carouselURL_video.length + 1;
+              var total_msg_tweet = fistfixedTxt + igcaption + `(${idImg}/${itemLen})` + hashtagLink + timestmp;
+            }
+
+
             var chkTweet = CarouselImageTweet(carouselURL_image, carouselURL_image.length, code, total_msg_tweet, function (callback) {
               console.log(callback);
             });
@@ -364,12 +418,18 @@ function CheckMedia(num, username, url) {
               console.log("newAllData.length is : " + newAllData2.length);
               var newAlldataLength = newAllData.length;
               var newAlldataLength2 = newAllData2.length;
-              var total_msg_tweet = fistfixedTxt + igcaption + "(1/2)" + hashtagLink + timestmp;
+
+              var itemLen = carouselURL_video.length + 2;
+              var idImg = carouselURL_video.length + 1;
+              var total_msg_tweet = fistfixedTxt + igcaption + `(${idImg}/${itemLen})` + hashtagLink + timestmp;
+
               var chkTweet = CarouselImageTweet(newAllData, newAlldataLength, code, total_msg_tweet, function (callback) {
                 console.log(callback);
                 if (callback == "done") {
-                  var total_msg_tweet = fistfixedTxt + igcaption + "(2/2)" + hashtagLink + timestmp;
-                  CarouselImageTweet(newAllData2, newAlldataLength2, code, total_msg_tweet, function(callback){
+                  var itemLen = carouselURL_video.length + 2;
+                  var idImg = carouselURL_video.length + 2;
+                  var total_msg_tweet = fistfixedTxt + igcaption + `(${idImg}/${itemLen})` + hashtagLink + timestmp;
+                  CarouselImageTweet(newAllData2, newAlldataLength2, code, total_msg_tweet, function (callback) {
                     console.log(callback);
                   });
                 }
@@ -395,11 +455,17 @@ function CheckMedia(num, username, url) {
               console.log("newAllData.length is : " + newAllData2.length);
               var newAlldataLength = newAllData.length;
               var newAlldataLength2 = newAllData2.length;
-              var total_msg_tweet = fistfixedTxt + igcaption + "(1/2)" + hashtagLink + timestmp;
+
+              var itemLen = carouselURL_video.length + 2;
+              var idImg = carouselURL_video.length + 1;
+              var total_msg_tweet = fistfixedTxt + igcaption + `(${idImg}/${itemLen})` + hashtagLink + timestmp;
+
               var chkTweet = CarouselImageTweet(newAllData, newAlldataLength, code, total_msg_tweet, function (callback) {
                 console.log(callback);
                 if (callback == "done") {
-                  var total_msg_tweet = fistfixedTxt + igcaption + "(2/2)" + hashtagLink + timestmp;
+                  var itemLen = carouselURL_video.length + 2;
+                  var idImg = carouselURL_video.length + 2;
+                  var total_msg_tweet = fistfixedTxt + igcaption + `(${idImg}/${itemLen})` + hashtagLink + timestmp;
                   var chkTweet2 = CarouselImageTweet(newAllData2, newAlldataLength2, code, total_msg_tweet, function (callback) {
                     console.log(callback);
                   });
@@ -430,15 +496,24 @@ function CheckMedia(num, username, url) {
               var newAlldataLength = newAllData.length;
               var newAlldataLength2 = newAllData2.length;
               var newAlldataLength3 = newAllData3.length;
-              var total_msg_tweet = fistfixedTxt + igcaption + "(1/3)" + hashtagLink + timestmp;
+
+              var itemLen = carouselURL_video.length + 3;
+              var idImg = carouselURL_video.length + 1;
+              var total_msg_tweet = fistfixedTxt + igcaption + `(${idImg}/${itemLen})` + hashtagLink + timestmp;
+
               var chkTweet = CarouselImageTweet(newAllData, newAlldataLength, code, total_msg_tweet, function (callback) {
                 console.log(callback);
                 if (callback == "done") {
-                  var total_msg_tweet = fistfixedTxt + igcaption + "(2/3)" + hashtagLink + timestmp;
+                  var itemLen = carouselURL_video.length + 3;
+                  var idImg = carouselURL_video.length + 2;
+                  var total_msg_tweet = fistfixedTxt + igcaption + `(${idImg}/${itemLen})` + hashtagLink + timestmp;
+
                   CarouselImageTweet(newAllData2, newAlldataLength2, code, total_msg_tweet, function (callback) {
                     console.log(callback);
                     if (callback == "done") {
-                      var total_msg_tweet = fistfixedTxt + igcaption + "(3/3)" + hashtagLink + timestmp;
+                      var itemLen = carouselURL_video.length + 3;
+                      var idImg = carouselURL_video.length + 3;
+                      var total_msg_tweet = fistfixedTxt + igcaption + `(${idImg}/${itemLen})` + hashtagLink + timestmp;
                       CarouselImageTweet(newAllData3, newAlldataLength3, code, total_msg_tweet, function (callback) {
                         console.log(callback);
                       });
@@ -467,9 +542,10 @@ function CheckMedia(num, username, url) {
 
 //FUNCTION TWEET VIDEO
 
-var MEDIA_ENDPOINT_URL = 'https://upload.twitter.com/1.1/media/upload.json'
-var POST_TWEET_URL = 'https://api.twitter.com/1.1/statuses/update.json'
-var secret = require('./oauth');
+var MEDIA_ENDPOINT_URL = 'https://upload.twitter.com/1.1/media/upload.json';
+var POST_TWEET_URL = 'https://api.twitter.com/1.1/statuses/update.json';
+var secret = require('./oauth'); //
+
 var OAUTH = secret;
 
 
@@ -659,9 +735,7 @@ VideoTweet.prototype.tweet = function () {
 
   // publish Tweet
   request.post({ url: POST_TWEET_URL, oauth: OAUTH, form: request_data }, function (error, response, body) {
-
     data = JSON.parse(body)
-
     console.log(data);
   });
 }
@@ -670,7 +744,7 @@ VideoTweet.prototype.tweet = function () {
 
 
 function CarouselImageTweet(allData, allDataLength, code, total_msg_tweet, callback) {
-  var secret = require("./auth");
+  var secret = require("./auth");//
   var Twitter = new TwitterPackage(secret);
   console.log("------Start Carousel Image Function--------");
   console.log(allData);
