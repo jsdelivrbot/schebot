@@ -33,6 +33,7 @@
     "pubnub": "^4.12.0",
     "pubsubhubbub": "^0.4.1",
     "request": "^2.81.0",
+    "screenshot-stream": "^4.2.0",
     "socket.io": "^2.0.3",
     "stream": "0.0.2",
     "twit": "^2.2.9",
