@@ -177,7 +177,8 @@ function CheckMedia(num, username, url) {
 
 
       //FUNCTION CHECK DELETED
-      var getItemLen = require('./public/media/itemLen.json').itemLen;
+      var getItemLen;
+      getItemLen = require('./public/media/itemLen.json').itemLen;
       console.log('getItemLen :  ' + getItemLen);
       if (itemLen < getItemLen) {
         //He Deleted
@@ -187,6 +188,7 @@ function CheckMedia(num, username, url) {
         TweetDel(status);
       }
       StoreLen(itemLen);
+      getItemLen == null;
       //FINISH FUNCTION CHECK DELETED
 
 
@@ -265,7 +267,13 @@ function CheckMedia(num, username, url) {
           var url = body.items[num].images.standard_resolution.url;
           console.log("url :  " + url);
 
-          var stream = request(url).pipe(fs.createWriteStream(`./public/media/${code}.jpg`));
+          //EDIT URL
+          var splitUrl = url.split("/");
+          var newUrl = url.replace(splitUrl[7] + "/", "").replace(splitUrl[4] + "/", "");
+          console.log(newUrl);
+
+
+          var stream = request(newUrl).pipe(fs.createWriteStream(`./public/media/${code}.jpg`));
           stream.on('finish', function () {
             console.log('---stream done---')
             //POST TWITTER
@@ -343,7 +351,12 @@ function CheckMedia(num, username, url) {
           for (c = 0; c < carouselLen; c++) {
             if (body.items[num].carousel_media[c].type == "image") {
               var carouselURL = body.items[num].carousel_media[c].images.standard_resolution.url;
-              carouselURL_image.push(carouselURL);
+
+              var splitUrl = carouselURL.split("/");
+              var newUrl = carouselURL.replace(splitUrl[7] + "/", "").replace(splitUrl[4] + "/", "");
+              console.log(newUrl);
+
+              carouselURL_image.push(newUrl);
 
             } else if (body.items[num].carousel_media[c].type = "video") {
               /* Do Video Function */
