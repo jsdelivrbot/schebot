@@ -171,18 +171,18 @@ function CheckMedia(num, username, url) {
 
 
       //FUNCTION CHECK DELETED
-     // var getItemLen;
-     // getItemLen = require('./public/media/itemLen.json').itemLen;
-     // console.log('getItemLen :  ' + getItemLen);
-     
+      // var getItemLen;
+      // getItemLen = require('./public/media/itemLen.json').itemLen;
+      // console.log('getItemLen :  ' + getItemLen);
+
       //StoreLen(itemLen);
-     // getItemLen == null;
+      // getItemLen == null;
 
       //Load
       store.load('itemCount', function (err, object) {
         if (err) throw err; // err if JSON parsing failed
         // do something with object here
-        
+
         var getItemLen = object.itemLen;
         console.log(" GET Item Length : " + getItemLen);
         //CHECK
@@ -859,30 +859,30 @@ function StoreLen(itemLen) {
 
 function TweetDel(status) {
   //Screenshot
-  // const stream = screenshot('https://www.instagram.com/333cyj333/', '1080x720');
-  // stream.pipe(fs.createWriteStream(`./public/media/choidel.png`));
-  // stream.on('finish', function () {
+  const stream = screenshot('https://www.instagram.com/333cyj333/', '1080x720');
+  stream.pipe(fs.createWriteStream(`./public/media/choidel.png`));
+  stream.on('finish', function () {
 
-  var getStatus = status;
-  var secret = require("./auth_del");
-  var Twitter = new TwitterPackage(secret);
-  // var data = require('fs').readFileSync(`./public/media/choidel.png`);
-  // Twitter.post('media/upload', { media: data }, function (error, media, response) {
-  // if (!error) {
-  // var status = {
-  //   status: getStatus,
-  //   media_ids: media.media_id_string
-  // }
-  Twitter.post('statuses/update', status, function (error, tweet, response) {
-    if (!error) {
-      console.log("done");
-    }
+    var getStatus = status;
+    var secret = require("./auth_del");
+    var Twitter = new TwitterPackage(secret);
+    var data = require('fs').readFileSync(`./public/media/choidel.png`);
+    Twitter.post('media/upload', { media: data }, function (error, media, response) {
+      if (!error) {
+        var newstatus = {
+          status: getStatus,
+          media_ids: media.media_id_string
+        }
+        Twitter.post('statuses/update', newstatus, function (error, tweet, response) {
+          if (!error) {
+            console.log("done");
+          }
+        });
+
+      } if (error) {
+        console.log(error);
+      }
+    });
   });
-
-  // } if (error) {
-  //   console.log(error);
-  // }
-  // });
-  // });
 
 }
