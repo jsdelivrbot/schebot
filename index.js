@@ -13,7 +13,7 @@ var async = require('async');
 var forEach = require('async-foreach').forEach;
 const socketIO = require('socket.io');
 var screenshot = require('screenshot-stream');
-
+var store = require('json-fs-store')('./public/media/');
 
 
 app.set('port', (process.env.PORT || 5000));
@@ -169,165 +169,103 @@ function CheckMedia(num, username, url) {
       var itemLen = body.items.length;
       console.log("itemLength :  " + itemLen);
 
-      var type = body.items[num].type;
-      var link = body.items[num].link;
-      var code = body.items[num].code;
-
-
-
 
       //FUNCTION CHECK DELETED
-      var getItemLen;
-      getItemLen = require('./public/media/itemLen.json').itemLen;
-      console.log('getItemLen :  ' + getItemLen);
-      if (itemLen < getItemLen) {
-        //He Deleted
-        console.log("He Deleted!");
-        var status = `[ ‼️ ] Youngjae deleted ${getItemLen - itemLen} post(s).\nThe post left ${itemLen}. (；ﾟДﾟ)`;
-        console.log(status);
-        TweetDel(status);
-      }
-      StoreLen(itemLen);
-      getItemLen == null;
+     // var getItemLen;
+     // getItemLen = require('./public/media/itemLen.json').itemLen;
+     // console.log('getItemLen :  ' + getItemLen);
+     
+      //StoreLen(itemLen);
+     // getItemLen == null;
+
+      //Load
+      store.load('itemCount', function (err, object) {
+        if (err) throw err; // err if JSON parsing failed
+        // do something with object here
+        
+        var getItemLen = object.itemLen;
+        console.log(" GET Item Length : " + getItemLen);
+        //CHECK
+        if (itemLen < getItemLen) {
+          //He Deleted
+          console.log("He Deleted!");
+          var status = `[ ‼️ ] Youngjae deleted ${getItemLen - itemLen} post(s).\nThe post left ${itemLen}. (；ﾟДﾟ)`;
+          console.log(status);
+          TweetDel(status);
+        }
+
+
+        //Finish Check
+        //Add
+        var donkey = {
+          id: 'itemCount',
+          name: 'item',
+          itemLen: itemLen
+        };
+        store.add(donkey, function (err) {
+          // called when the file has been written
+          // to the /path/to/storage/location/12345.json
+          if (err) throw err; // err if the save failed
+          console.log("Stored Len!");
+        });
+      });
+
       //FINISH FUNCTION CHECK DELETED
 
+      if (itemLen != 0) { //Check When ItemLen is 0
+        var type = body.items[num].type;
+        var link = body.items[num].link;
+        var code = body.items[num].code;
 
-
-
-      //CAPTION
-      var txtcaption
-      var Chkcaption = body.items[num].caption;
-      if (Chkcaption !== null) {
-        txtcaption = body.items[num].caption.text;
-      }
-      if (Chkcaption == null) {
-        txtcaption = "";
-      }
-      console.log("CAPTION : " + txtcaption);
-
-
-
-
-      //CHECK TIME
-      var created_time = body.items[num].created_time;
-      var timestamp_ct = moment.unix(created_time);
-      var timestamp_ct_format = timestamp_ct.format('YYYY-MM-DD HH:mm:00');
-
-      var create_time_KR = momentTz.tz(timestamp_ct, "Asia/Seoul").format('MMM DD YYYY, HH:mm');
-      var currenttime = moment().format('YYYY-MM-DD HH:mm:00');
-      var currentimeKR = momentTz.tz(currenttime, "Asia/Seoul");
-      // console.log("create_time_KR : " + create_time_KR.format('YYYY-MM-DD HH:mm:00'));
-      // console.log("current time : " + currenttime);
-      // console.log("currenttimeKR : " + currentimeKR.format('YYYY-MM-DD HH:mm:00'))
-
-      var lastMin = moment().subtract(1, 'minute').format('YYYY-MM-DD HH:mm:00');
-      var lastMin_KR = momentTz.tz(lastMin, "Asia/Seoul").format('YYYY-MM-DD HH:mm:00');
-      console.log("last min : " + lastMin);
-      // console.log("last min KR : " + lastMin_KR);
-      console.log("timestamp_ct_format : " + timestamp_ct_format);
-
-      // console.log("create_time_KR : " + create_time_KR);
-      var chkDate = moment(timestamp_ct_format).isSame(lastMin); // true
-
-      // res.send(timestamp_ct_format + lastMin);
-      console.log(chkDate);
-      if (chkDate == true) {
-        console.log("---- New Post ---")
-
-        //TEXT TWEET
-        var fistfixedTxt = "[YOUNGJAESTAGRAM] ";
-        var hashtagLink = "\n#영재 #GOT7\n" + link + "\n";
-        var timestmp = create_time_KR;
-        console.log("timestmp : " + timestmp);
-
-        var txtLeft = 140 - fistfixedTxt.length - hashtagLink.length - timestmp.length - 3;
-        console.log("txtLeft : " + txtLeft);
-
-        var igcaption;
-        if (txtcaption.length > txtLeft) {
-          console.log("-- ig caption too long -- ")
-          igcaption = txtcaption.substring(0, txtLeft) + "...";
+        //CAPTION
+        var txtcaption
+        var Chkcaption = body.items[num].caption;
+        if (Chkcaption !== null) {
+          txtcaption = body.items[num].caption.text;
         }
-        if (txtcaption.length <= txtLeft) {
-          console.log("-- ig caption NOT too long -- ")
-          igcaption = txtcaption;
+        if (Chkcaption == null) {
+          txtcaption = "";
         }
-        console.log("IG CAPTION : " + igcaption);
-
-        var total_msg_tweet = fistfixedTxt + igcaption + hashtagLink + timestmp;
-        console.log("total_msg_tweet :\n" + total_msg_tweet)
+        console.log("CAPTION : " + txtcaption);
 
 
 
 
+        //CHECK TIME
+        var created_time = body.items[num].created_time;
+        var timestamp_ct = moment.unix(created_time);
+        var timestamp_ct_format = timestamp_ct.format('YYYY-MM-DD HH:mm:00');
 
-        //IMAGE TYPE
-        if (type == "image") {
-          //IMAGE URL
-          var url = body.items[num].images.standard_resolution.url;
-          console.log("url :  " + url);
+        var create_time_KR = momentTz.tz(timestamp_ct, "Asia/Seoul").format('MMM DD YYYY, HH:mm');
+        var currenttime = moment().format('YYYY-MM-DD HH:mm:00');
+        var currentimeKR = momentTz.tz(currenttime, "Asia/Seoul");
+        // console.log("create_time_KR : " + create_time_KR.format('YYYY-MM-DD HH:mm:00'));
+        // console.log("current time : " + currenttime);
+        // console.log("currenttimeKR : " + currentimeKR.format('YYYY-MM-DD HH:mm:00'))
 
-          //EDIT URL
-          var splitUrl = url.split("/");
-          var newUrl = url.replace(splitUrl[7] + "/", "").replace(splitUrl[4] + "/", "");
-          console.log(newUrl);
+        var lastMin = moment().subtract(1, 'minute').format('YYYY-MM-DD HH:mm:00');
+        var lastMin_KR = momentTz.tz(lastMin, "Asia/Seoul").format('YYYY-MM-DD HH:mm:00');
+        console.log("last min : " + lastMin);
+        // console.log("last min KR : " + lastMin_KR);
+        console.log("timestamp_ct_format : " + timestamp_ct_format);
 
+        // console.log("create_time_KR : " + create_time_KR);
+        var chkDate = moment(timestamp_ct_format).isSame(lastMin); // true
 
-          var stream = request(newUrl).pipe(fs.createWriteStream(`./public/media/${code}.jpg`));
-          stream.on('finish', function () {
-            console.log('---stream done---')
-            //POST TWITTER
-            console.log("start tweet image");
-            var secret = require("./auth");
-            var Twitter = new TwitterPackage(secret);
-            var data = require('fs').readFileSync(`./public/media/${code}.jpg`);
-            Twitter.post('media/upload', { media: data }, function (error, media, response) {
-              if (!error) {
-                console.log(media);
-                var status = {
-                  status: total_msg_tweet,
-                  media_ids: media.media_id_string // Pass the media id string
-                }
-                // console.log(media.media_id_string);
-                Twitter.post('statuses/update', status, function (error, tweet, response) {
-                  if (!error) {
-                    console.log("done");
-                  }
-                });
+        // res.send(timestamp_ct_format + lastMin);
+        console.log(chkDate);
+        if (chkDate == true) {
+          console.log("---- New Post ---")
 
-              } if (error) {
-                console.log(error);
-              }
-            });
-          });
-        }
+          //TEXT TWEET
+          var fistfixedTxt = "[YOUNGJAESTAGRAM] ";
+          var hashtagLink = "\n#영재 #GOT7\n" + link + "\n";
+          var timestmp = create_time_KR;
+          console.log("timestmp : " + timestmp);
 
-
-
-        //VIDEO TYPE
-        if (type == "video") {
-          var url = body.items[num].videos.standard_resolution.url;
-          console.log("url : " + url);
-
-          var stream = request(url).pipe(fs.createWriteStream(`./public/media/${code}.mp4`));
-          stream.on('finish', function () {
-            console.log('---stream done---')
-
-            var videoTweet = new VideoTweet({
-              file_path: `./public/media/${code}.mp4`,
-              tweet_text: total_msg_tweet
-            });
-
-          });
-        }
-
-
-
-
-        //TYPE CAROUSEL
-        if (type == "carousel") {
-          var txtLeft = 140 - fistfixedTxt.length - hashtagLink.length - timestmp.length - 3 - 5;
+          var txtLeft = 140 - fistfixedTxt.length - hashtagLink.length - timestmp.length - 3;
           console.log("txtLeft : " + txtLeft);
+
           var igcaption;
           if (txtcaption.length > txtLeft) {
             console.log("-- ig caption too long -- ")
@@ -339,225 +277,314 @@ function CheckMedia(num, username, url) {
           }
           console.log("IG CAPTION : " + igcaption);
 
-          console.log("TYPE CAROUSEL");
-          var carouselLen = body.items[num].carousel_media.length;
-          // console.log("carouselLen : " + carouselLen);
-          // console.log(body.items[num].carousel_media[1].images.standard_resolution.url)
-          var allData = [];
-          var carouselURL_image = [];
-          var carouselURL_video = [];
-          var mediaIDSet = [];
-          var c, i;
-          for (c = 0; c < carouselLen; c++) {
-            if (body.items[num].carousel_media[c].type == "image") {
-              var carouselURL = body.items[num].carousel_media[c].images.standard_resolution.url;
-
-              var splitUrl = carouselURL.split("/");
-              var newUrl = carouselURL.replace(splitUrl[7] + "/", "").replace(splitUrl[4] + "/", "");
-              console.log(newUrl);
-
-              carouselURL_image.push(newUrl);
-
-            } else if (body.items[num].carousel_media[c].type = "video") {
-              /* Do Video Function */
-              var carouselVideoURL = body.items[num].carousel_media[c].videos.standard_resolution.url;
-              carouselURL_video.push(carouselVideoURL);
-            }
-          }
-
-          //Carousel Video
-          if (carouselURL_video.length > 0) {
-            /* Do Video Function */
-            forEach(carouselURL_video, function (item, index, arr) {
-              var numVid = index + 1;
-              console.log("num Vid : " + numVid);
-              var stream = request(item).pipe(fs.createWriteStream(`./public/media/${code}_${numVid}.mp4`));
-              stream.on('finish', function () {
-                console.log('---stream done---')
-                var idvid = carouselURL_video.indexOf(item) + 1;
-                if (carouselURL_image.length == 0) {
-                  var itemLen = carouselURL_video.length;
-                  var total_msg_tweet = fistfixedTxt + igcaption + `(${idvid}/${itemLen})` + hashtagLink + timestmp;
-                  var videoTweet = new VideoTweet({
-                    file_path: `./public/media/${code}_${numVid}.mp4`,
-                    tweet_text: total_msg_tweet
-                  });
-                }
-                if (carouselURL_image.length > 0 && carouselURL_image.length < 5) {
-                  //tweet of image has 1
-                  var itemLen = carouselURL_video.length + 1;
-                  var total_msg_tweet = fistfixedTxt + igcaption + `(${idvid}/${itemLen})` + hashtagLink + timestmp;
-                  var videoTweet = new VideoTweet({
-                    file_path: `./public/media/${code}_${numVid}.mp4`,
-                    tweet_text: total_msg_tweet
-                  });
-                }
-                if (carouselURL_image.length >= 5 && carouselURL_image.length < 9) {
-                  //tweet of video has 2
-                  var itemLen = carouselURL_video.length + 2;
-                  var total_msg_tweet = fistfixedTxt + igcaption + `(${idvid}/${itemLen})` + hashtagLink + timestmp;
-                  var videoTweet = new VideoTweet({
-                    file_path: `./public/media/${code}_${numVid}.mp4`,
-                    tweet_text: total_msg_tweet
-                  });
-                }
-                if (carouselURL_image.length >= 9) {
-                  //tweet of video has 3
-                  var itemLen = carouselURL_video.length + 3;
-                  var total_msg_tweet = fistfixedTxt + igcaption + `(${idvid}/${itemLen})` + hashtagLink + timestmp;
-                  var videoTweet = new VideoTweet({
-                    file_path: `./public/media/${code}_${numVid}.mp4`,
-                    tweet_text: total_msg_tweet
-                  });
-                }
-
-              });
-            });
-          }
-
-          //Carousel Images
-          console.log(" Carousel Length  :  " + carouselURL_image.length);
-          if (carouselURL_image.length > 0 && carouselURL_image.length < 5) {
-            console.log("carouselURL_image lower than 4");
-            if (carouselURL_video.length > 0) {
-              var itemLen = carouselURL_video.length + carouselURL_image.length;
-              var idImg = carouselURL_video.length + 1;
-              var total_msg_tweet = fistfixedTxt + igcaption + `(${idImg}/${itemLen})` + hashtagLink + timestmp;
-            }
+          var total_msg_tweet = fistfixedTxt + igcaption + hashtagLink + timestmp;
+          console.log("total_msg_tweet :\n" + total_msg_tweet)
 
 
-            var chkTweet = CarouselImageTweet(carouselURL_image, carouselURL_image.length, code, total_msg_tweet, function (callback) {
-              console.log(callback);
-            });
-          }
-          if (carouselURL_image.length == 5) {
-            console.log("carouselURL_IMAGE = 5")
-            var dataLength = carouselURL_image.length;
-            var newAllData = [];
-            var newAllData2 = [];
 
-            forEach(carouselURL_image, function (item, index, arr) {
-              // console.log("each", item, index, arr);
-              if (carouselURL_image.indexOf(item) < 3) {
-                newAllData.push(item);
-              } if (carouselURL_image.indexOf(item) >= 3) {
-                newAllData2.push(item);
-              }
-              // });
-            }, function () {
-              console.log("newAllData.length is : " + newAllData.length);
-              console.log("newAllData.length is : " + newAllData2.length);
-              var newAlldataLength = newAllData.length;
-              var newAlldataLength2 = newAllData2.length;
 
-              var itemLen = carouselURL_video.length + 2;
-              var idImg = carouselURL_video.length + 1;
-              var total_msg_tweet = fistfixedTxt + igcaption + `(${idImg}/${itemLen})` + hashtagLink + timestmp;
 
-              var chkTweet = CarouselImageTweet(newAllData, newAlldataLength, code, total_msg_tweet, function (callback) {
-                console.log(callback);
-                if (callback == "done") {
-                  var itemLen = carouselURL_video.length + 2;
-                  var idImg = carouselURL_video.length + 2;
-                  var total_msg_tweet = fistfixedTxt + igcaption + `(${idImg}/${itemLen})` + hashtagLink + timestmp;
-                  CarouselImageTweet(newAllData2, newAlldataLength2, code, total_msg_tweet, function (callback) {
-                    console.log(callback);
-                  });
-                }
-              });
-            });
-          }
-          if (carouselURL_image.length > 5 && carouselURL_image.length < 9) {
-            console.log("carouselURL_image more then 5 but less than 9");
-            var dataLength = carouselURL_image.length;
-            var newAllData = [];
-            var newAllData2 = [];
+          //IMAGE TYPE
+          if (type == "image") {
+            //IMAGE URL
+            var url = body.items[num].images.standard_resolution.url;
+            console.log("url :  " + url);
 
-            forEach(carouselURL_image, function (item, index, arr) {
-              // console.log("each", item, index, arr);
-              if (carouselURL_image.indexOf(item) < 4) {
-                newAllData.push(item);
-              } if (carouselURL_image.indexOf(item) >= 4) {
-                newAllData2.push(item);
-              }
-              // });
-            }, function () {
-              console.log("newAllData.length is : " + newAllData.length);
-              console.log("newAllData.length is : " + newAllData2.length);
-              var newAlldataLength = newAllData.length;
-              var newAlldataLength2 = newAllData2.length;
+            //EDIT URL
+            var splitUrl = url.split("/");
+            var newUrl = url.replace(splitUrl[7] + "/", "").replace(splitUrl[4] + "/", "");
+            console.log(newUrl);
 
-              var itemLen = carouselURL_video.length + 2;
-              var idImg = carouselURL_video.length + 1;
-              var total_msg_tweet = fistfixedTxt + igcaption + `(${idImg}/${itemLen})` + hashtagLink + timestmp;
 
-              var chkTweet = CarouselImageTweet(newAllData, newAlldataLength, code, total_msg_tweet, function (callback) {
-                console.log(callback);
-                if (callback == "done") {
-                  var itemLen = carouselURL_video.length + 2;
-                  var idImg = carouselURL_video.length + 2;
-                  var total_msg_tweet = fistfixedTxt + igcaption + `(${idImg}/${itemLen})` + hashtagLink + timestmp;
-                  var chkTweet2 = CarouselImageTweet(newAllData2, newAlldataLength2, code, total_msg_tweet, function (callback) {
-                    console.log(callback);
-                  });
-                }
-              });
-            });
-          }
-          if (carouselURL_image.length > 9) {
-            console.log("carouselURL_image more then 9");
-            var dataLength = carouselURL_image.length;
-            var newAllData = [];
-            var newAllData2 = [];
-            var newAllData3 = [];
-            forEach(carouselURL_image, function (item, index, arr) {
-              // console.log("each", item, index, arr);
-              if (carouselURL_image.indexOf(item) < 4) {
-                newAllData.push(item);
-              } if (carouselURL_image.indexOf(item) >= 4 && carouselURL_image.indexOf(item) < 7) {
-                newAllData2.push(item);
-              }
-              if (carouselURL_image.indexOf(item) >= 7) {
-                newAllData3.push(item);
-              }
-              // });
-            }, function () {
-              console.log("newAllData.length is : " + newAllData.length);
-              console.log("newAllData.length is : " + newAllData2.length);
-              var newAlldataLength = newAllData.length;
-              var newAlldataLength2 = newAllData2.length;
-              var newAlldataLength3 = newAllData3.length;
-
-              var itemLen = carouselURL_video.length + 3;
-              var idImg = carouselURL_video.length + 1;
-              var total_msg_tweet = fistfixedTxt + igcaption + `(${idImg}/${itemLen})` + hashtagLink + timestmp;
-
-              var chkTweet = CarouselImageTweet(newAllData, newAlldataLength, code, total_msg_tweet, function (callback) {
-                console.log(callback);
-                if (callback == "done") {
-                  var itemLen = carouselURL_video.length + 3;
-                  var idImg = carouselURL_video.length + 2;
-                  var total_msg_tweet = fistfixedTxt + igcaption + `(${idImg}/${itemLen})` + hashtagLink + timestmp;
-
-                  CarouselImageTweet(newAllData2, newAlldataLength2, code, total_msg_tweet, function (callback) {
-                    console.log(callback);
-                    if (callback == "done") {
-                      var itemLen = carouselURL_video.length + 3;
-                      var idImg = carouselURL_video.length + 3;
-                      var total_msg_tweet = fistfixedTxt + igcaption + `(${idImg}/${itemLen})` + hashtagLink + timestmp;
-                      CarouselImageTweet(newAllData3, newAlldataLength3, code, total_msg_tweet, function (callback) {
-                        console.log(callback);
-                      });
+            var stream = request(newUrl).pipe(fs.createWriteStream(`./public/media/${code}.jpg`));
+            stream.on('finish', function () {
+              console.log('---stream done---')
+              //POST TWITTER
+              console.log("start tweet image");
+              var secret = require("./auth");
+              var Twitter = new TwitterPackage(secret);
+              var data = require('fs').readFileSync(`./public/media/${code}.jpg`);
+              Twitter.post('media/upload', { media: data }, function (error, media, response) {
+                if (!error) {
+                  console.log(media);
+                  var status = {
+                    status: total_msg_tweet,
+                    media_ids: media.media_id_string // Pass the media id string
+                  }
+                  // console.log(media.media_id_string);
+                  Twitter.post('statuses/update', status, function (error, tweet, response) {
+                    if (!error) {
+                      console.log("done");
                     }
                   });
+
+                } if (error) {
+                  console.log(error);
                 }
               });
             });
           }
 
+
+
+          //VIDEO TYPE
+          if (type == "video") {
+            var url = body.items[num].videos.standard_resolution.url;
+            console.log("url : " + url);
+
+            var stream = request(url).pipe(fs.createWriteStream(`./public/media/${code}.mp4`));
+            stream.on('finish', function () {
+              console.log('---stream done---')
+
+              var videoTweet = new VideoTweet({
+                file_path: `./public/media/${code}.mp4`,
+                tweet_text: total_msg_tweet
+              });
+
+            });
+          }
+
+
+
+
+          //TYPE CAROUSEL
+          if (type == "carousel") {
+            var txtLeft = 140 - fistfixedTxt.length - hashtagLink.length - timestmp.length - 3 - 5;
+            console.log("txtLeft : " + txtLeft);
+            var igcaption;
+            if (txtcaption.length > txtLeft) {
+              console.log("-- ig caption too long -- ")
+              igcaption = txtcaption.substring(0, txtLeft) + "...";
+            }
+            if (txtcaption.length <= txtLeft) {
+              console.log("-- ig caption NOT too long -- ")
+              igcaption = txtcaption;
+            }
+            console.log("IG CAPTION : " + igcaption);
+
+            console.log("TYPE CAROUSEL");
+            var carouselLen = body.items[num].carousel_media.length;
+            // console.log("carouselLen : " + carouselLen);
+            // console.log(body.items[num].carousel_media[1].images.standard_resolution.url)
+            var allData = [];
+            var carouselURL_image = [];
+            var carouselURL_video = [];
+            var mediaIDSet = [];
+            var c, i;
+            for (c = 0; c < carouselLen; c++) {
+              if (body.items[num].carousel_media[c].type == "image") {
+                var carouselURL = body.items[num].carousel_media[c].images.standard_resolution.url;
+
+                var splitUrl = carouselURL.split("/");
+                var newUrl = carouselURL.replace(splitUrl[7] + "/", "").replace(splitUrl[4] + "/", "");
+                console.log(newUrl);
+
+                carouselURL_image.push(newUrl);
+
+              } else if (body.items[num].carousel_media[c].type = "video") {
+                /* Do Video Function */
+                var carouselVideoURL = body.items[num].carousel_media[c].videos.standard_resolution.url;
+                carouselURL_video.push(carouselVideoURL);
+              }
+            }
+
+            //Carousel Video
+            if (carouselURL_video.length > 0) {
+              /* Do Video Function */
+              forEach(carouselURL_video, function (item, index, arr) {
+                var numVid = index + 1;
+                console.log("num Vid : " + numVid);
+                var stream = request(item).pipe(fs.createWriteStream(`./public/media/${code}_${numVid}.mp4`));
+                stream.on('finish', function () {
+                  console.log('---stream done---')
+                  var idvid = carouselURL_video.indexOf(item) + 1;
+                  if (carouselURL_image.length == 0) {
+                    var itemLen = carouselURL_video.length;
+                    var total_msg_tweet = fistfixedTxt + igcaption + `(${idvid}/${itemLen})` + hashtagLink + timestmp;
+                    var videoTweet = new VideoTweet({
+                      file_path: `./public/media/${code}_${numVid}.mp4`,
+                      tweet_text: total_msg_tweet
+                    });
+                  }
+                  if (carouselURL_image.length > 0 && carouselURL_image.length < 5) {
+                    //tweet of image has 1
+                    var itemLen = carouselURL_video.length + 1;
+                    var total_msg_tweet = fistfixedTxt + igcaption + `(${idvid}/${itemLen})` + hashtagLink + timestmp;
+                    var videoTweet = new VideoTweet({
+                      file_path: `./public/media/${code}_${numVid}.mp4`,
+                      tweet_text: total_msg_tweet
+                    });
+                  }
+                  if (carouselURL_image.length >= 5 && carouselURL_image.length < 9) {
+                    //tweet of video has 2
+                    var itemLen = carouselURL_video.length + 2;
+                    var total_msg_tweet = fistfixedTxt + igcaption + `(${idvid}/${itemLen})` + hashtagLink + timestmp;
+                    var videoTweet = new VideoTweet({
+                      file_path: `./public/media/${code}_${numVid}.mp4`,
+                      tweet_text: total_msg_tweet
+                    });
+                  }
+                  if (carouselURL_image.length >= 9) {
+                    //tweet of video has 3
+                    var itemLen = carouselURL_video.length + 3;
+                    var total_msg_tweet = fistfixedTxt + igcaption + `(${idvid}/${itemLen})` + hashtagLink + timestmp;
+                    var videoTweet = new VideoTweet({
+                      file_path: `./public/media/${code}_${numVid}.mp4`,
+                      tweet_text: total_msg_tweet
+                    });
+                  }
+
+                });
+              });
+            }
+
+            //Carousel Images
+            console.log(" Carousel Length  :  " + carouselURL_image.length);
+            if (carouselURL_image.length > 0 && carouselURL_image.length < 5) {
+              console.log("carouselURL_image lower than 4");
+              if (carouselURL_video.length > 0) {
+                var itemLen = carouselURL_video.length + carouselURL_image.length;
+                var idImg = carouselURL_video.length + 1;
+                var total_msg_tweet = fistfixedTxt + igcaption + `(${idImg}/${itemLen})` + hashtagLink + timestmp;
+              }
+
+
+              var chkTweet = CarouselImageTweet(carouselURL_image, carouselURL_image.length, code, total_msg_tweet, function (callback) {
+                console.log(callback);
+              });
+            }
+            if (carouselURL_image.length == 5) {
+              console.log("carouselURL_IMAGE = 5")
+              var dataLength = carouselURL_image.length;
+              var newAllData = [];
+              var newAllData2 = [];
+
+              forEach(carouselURL_image, function (item, index, arr) {
+                // console.log("each", item, index, arr);
+                if (carouselURL_image.indexOf(item) < 3) {
+                  newAllData.push(item);
+                } if (carouselURL_image.indexOf(item) >= 3) {
+                  newAllData2.push(item);
+                }
+                // });
+              }, function () {
+                console.log("newAllData.length is : " + newAllData.length);
+                console.log("newAllData.length is : " + newAllData2.length);
+                var newAlldataLength = newAllData.length;
+                var newAlldataLength2 = newAllData2.length;
+
+                var itemLen = carouselURL_video.length + 2;
+                var idImg = carouselURL_video.length + 1;
+                var total_msg_tweet = fistfixedTxt + igcaption + `(${idImg}/${itemLen})` + hashtagLink + timestmp;
+
+                var chkTweet = CarouselImageTweet(newAllData, newAlldataLength, code, total_msg_tweet, function (callback) {
+                  console.log(callback);
+                  if (callback == "done") {
+                    var itemLen = carouselURL_video.length + 2;
+                    var idImg = carouselURL_video.length + 2;
+                    var total_msg_tweet = fistfixedTxt + igcaption + `(${idImg}/${itemLen})` + hashtagLink + timestmp;
+                    CarouselImageTweet(newAllData2, newAlldataLength2, code, total_msg_tweet, function (callback) {
+                      console.log(callback);
+                    });
+                  }
+                });
+              });
+            }
+            if (carouselURL_image.length > 5 && carouselURL_image.length < 9) {
+              console.log("carouselURL_image more then 5 but less than 9");
+              var dataLength = carouselURL_image.length;
+              var newAllData = [];
+              var newAllData2 = [];
+
+              forEach(carouselURL_image, function (item, index, arr) {
+                // console.log("each", item, index, arr);
+                if (carouselURL_image.indexOf(item) < 4) {
+                  newAllData.push(item);
+                } if (carouselURL_image.indexOf(item) >= 4) {
+                  newAllData2.push(item);
+                }
+                // });
+              }, function () {
+                console.log("newAllData.length is : " + newAllData.length);
+                console.log("newAllData.length is : " + newAllData2.length);
+                var newAlldataLength = newAllData.length;
+                var newAlldataLength2 = newAllData2.length;
+
+                var itemLen = carouselURL_video.length + 2;
+                var idImg = carouselURL_video.length + 1;
+                var total_msg_tweet = fistfixedTxt + igcaption + `(${idImg}/${itemLen})` + hashtagLink + timestmp;
+
+                var chkTweet = CarouselImageTweet(newAllData, newAlldataLength, code, total_msg_tweet, function (callback) {
+                  console.log(callback);
+                  if (callback == "done") {
+                    var itemLen = carouselURL_video.length + 2;
+                    var idImg = carouselURL_video.length + 2;
+                    var total_msg_tweet = fistfixedTxt + igcaption + `(${idImg}/${itemLen})` + hashtagLink + timestmp;
+                    var chkTweet2 = CarouselImageTweet(newAllData2, newAlldataLength2, code, total_msg_tweet, function (callback) {
+                      console.log(callback);
+                    });
+                  }
+                });
+              });
+            }
+            if (carouselURL_image.length > 9) {
+              console.log("carouselURL_image more then 9");
+              var dataLength = carouselURL_image.length;
+              var newAllData = [];
+              var newAllData2 = [];
+              var newAllData3 = [];
+              forEach(carouselURL_image, function (item, index, arr) {
+                // console.log("each", item, index, arr);
+                if (carouselURL_image.indexOf(item) < 4) {
+                  newAllData.push(item);
+                } if (carouselURL_image.indexOf(item) >= 4 && carouselURL_image.indexOf(item) < 7) {
+                  newAllData2.push(item);
+                }
+                if (carouselURL_image.indexOf(item) >= 7) {
+                  newAllData3.push(item);
+                }
+                // });
+              }, function () {
+                console.log("newAllData.length is : " + newAllData.length);
+                console.log("newAllData.length is : " + newAllData2.length);
+                var newAlldataLength = newAllData.length;
+                var newAlldataLength2 = newAllData2.length;
+                var newAlldataLength3 = newAllData3.length;
+
+                var itemLen = carouselURL_video.length + 3;
+                var idImg = carouselURL_video.length + 1;
+                var total_msg_tweet = fistfixedTxt + igcaption + `(${idImg}/${itemLen})` + hashtagLink + timestmp;
+
+                var chkTweet = CarouselImageTweet(newAllData, newAlldataLength, code, total_msg_tweet, function (callback) {
+                  console.log(callback);
+                  if (callback == "done") {
+                    var itemLen = carouselURL_video.length + 3;
+                    var idImg = carouselURL_video.length + 2;
+                    var total_msg_tweet = fistfixedTxt + igcaption + `(${idImg}/${itemLen})` + hashtagLink + timestmp;
+
+                    CarouselImageTweet(newAllData2, newAlldataLength2, code, total_msg_tweet, function (callback) {
+                      console.log(callback);
+                      if (callback == "done") {
+                        var itemLen = carouselURL_video.length + 3;
+                        var idImg = carouselURL_video.length + 3;
+                        var total_msg_tweet = fistfixedTxt + igcaption + `(${idImg}/${itemLen})` + hashtagLink + timestmp;
+                        CarouselImageTweet(newAllData3, newAlldataLength3, code, total_msg_tweet, function (callback) {
+                          console.log(callback);
+                        });
+                      }
+                    });
+                  }
+                });
+              });
+            }
+
+          }
         }
       }
 
+
+    } else {
+      console.log("Cannot Load API!");
     }
   })
 
@@ -832,30 +859,30 @@ function StoreLen(itemLen) {
 
 function TweetDel(status) {
   //Screenshot
-  const stream = screenshot('https://www.instagram.com/333cyj333/', '1080x720');
-  stream.pipe(fs.createWriteStream(`./public/media/choidel.png`));
-  stream.on('finish', function () {
+  // const stream = screenshot('https://www.instagram.com/333cyj333/', '1080x720');
+  // stream.pipe(fs.createWriteStream(`./public/media/choidel.png`));
+  // stream.on('finish', function () {
 
-    var getStatus = status;
-    var secret = require("./auth_del");
-    var Twitter = new TwitterPackage(secret);
-    var data = require('fs').readFileSync(`./public/media/choidel.png`);
-    Twitter.post('media/upload', { media: data }, function (error, media, response) {
-      if (!error) {
-        var status = {
-          status: getStatus,
-          media_ids: media.media_id_string
-        }
-        Twitter.post('statuses/update', status, function (error, tweet, response) {
-          if (!error) {
-            console.log("done");
-          }
-        });
-
-      } if (error) {
-        console.log(error);
-      }
-    });
+  var getStatus = status;
+  var secret = require("./auth_del");
+  var Twitter = new TwitterPackage(secret);
+  // var data = require('fs').readFileSync(`./public/media/choidel.png`);
+  // Twitter.post('media/upload', { media: data }, function (error, media, response) {
+  // if (!error) {
+  // var status = {
+  //   status: getStatus,
+  //   media_ids: media.media_id_string
+  // }
+  Twitter.post('statuses/update', status, function (error, tweet, response) {
+    if (!error) {
+      console.log("done");
+    }
   });
+
+  // } if (error) {
+  //   console.log(error);
+  // }
+  // });
+  // });
 
 }

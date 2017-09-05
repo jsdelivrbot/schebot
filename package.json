@@ -25,6 +25,7 @@
     "instagram-node": "^0.5.8",
     "instagram-node-api": "^1.6.0",
     "instagram-node-lib": "^0.1.1",
+    "json-fs-store": "^1.0.1",
     "moment": "^2.18.1",
     "moment-timezone": "^0.5.13",
     "nconf": "^0.8.4",
