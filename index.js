@@ -171,44 +171,37 @@ function CheckMedia(num, username, url) {
 
 
       //FUNCTION CHECK DELETED
-      // var getItemLen;
-      // getItemLen = require('./public/media/itemLen.json').itemLen;
-      // console.log('getItemLen :  ' + getItemLen);
-
-      //StoreLen(itemLen);
-      // getItemLen == null;
-
       //Load
-      store.load('itemCount', function (err, object) {
-        if (err) throw err; // err if JSON parsing failed
-        // do something with object here
+      // store.load('itemCount', function (err, object) {
+      //   if (err) throw err; // err if JSON parsing failed
+      //   // do something with object here
 
-        var getItemLen = object.itemLen;
-        console.log(" GET Item Length : " + getItemLen);
-        //CHECK
-        if (itemLen < getItemLen) {
-          //He Deleted
-          console.log("He Deleted!");
-          var status = `[ ‼️ ] Youngjae deleted ${getItemLen - itemLen} post(s).\nThe post left ${itemLen}. (；ﾟДﾟ)`;
-          console.log(status);
-          TweetDel(status);
-        }
+      //   var getItemLen = object.itemLen;
+      //   console.log(" GET Item Length : " + getItemLen);
+      //   //CHECK
+      //   if (itemLen < getItemLen) {
+      //     //He Deleted
+      //     console.log("He Deleted!");
+      //     var status = `[ ‼️ ] Youngjae deleted ${getItemLen - itemLen} post(s).\nThe post left ${itemLen}. (；ﾟДﾟ)`;
+      //     console.log(status);
+      //     TweetDel(status);
+      //   }
 
 
         //Finish Check
         //Add
-        var donkey = {
-          id: 'itemCount',
-          name: 'item',
-          itemLen: itemLen
-        };
-        store.add(donkey, function (err) {
-          // called when the file has been written
-          // to the /path/to/storage/location/12345.json
-          if (err) throw err; // err if the save failed
-          console.log("Stored Len!");
-        });
-      });
+      //   var donkey = {
+      //     id: 'itemCount',
+      //     name: 'item',
+      //     itemLen: itemLen
+      //   };
+      //   store.add(donkey, function (err) {
+      //     // called when the file has been written
+      //     // to the /path/to/storage/location/12345.json
+      //     if (err) throw err; // err if the save failed
+      //     console.log("Stored Len!");
+      //   });
+      // });
 
       //FINISH FUNCTION CHECK DELETED
 
