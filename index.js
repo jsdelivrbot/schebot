@@ -51,6 +51,22 @@ server.listen(app.get('port'), function () {
 
 
 
+//First SETTING
+var lastMin = moment().subtract(1, 'minute').format('YYYY-MM-DD-HH-mm-00');
+var backUpLastMinData = {
+  id: lastMin, //also filename
+  "name": "item",
+  "itemLen": 7
+};
+
+store.add(backUpLastMinData, function (err) {
+  console.log("first setting success");
+  if (err) throw err; // err if the save failed
+});
+
+
+
+
 
 // app.post('/fetchJson/:username', function (req, res) {
 var username = "333cyj333";
@@ -171,25 +187,67 @@ function CheckMedia(num, username, url) {
 
 
       //FUNCTION CHECK DELETED
+      var currenttime = moment().format('YYYY-MM-DD-HH-mm-00');
+      var lastMin = moment().subtract(1, 'minute').format('YYYY-MM-DD-HH-mm-00');
+      console.log(currenttime, lastMin);
+
+
+      var backUpData = {
+        id: currenttime, //also filename
+        "name": "item",
+        "itemLen": itemLen
+      };
+
+      store.add(backUpData, function (err) {
+        // called when the file has been written
+        // to the /path/to/storage/location/12345.json
+        if (err) throw err; // err if the save failed
+      });
+
+
+      store.load(lastMin, function (err, object) {
+        if (err) throw err; // err if JSON parsing failed
+        // do something with object here
+        console.log("loadded : " + lastMin);
+        var getItemLen = object.itemLen;
+        console.log(" GET Item Length : " + getItemLen);
+        //CHECK
+        if (itemLen < getItemLen) {
+          //He Deleted
+          console.log("He Deleted!");
+          var status = `[ ‼️ ] Youngjae deleted ${getItemLen - itemLen} post(s).\nThe post left ${itemLen}. (；ﾟДﾟ)`;
+          console.log(status);
+          TweetDel(status);
+        }
+
+        //finish check
+        store.remove(lastMin, function (err) {
+          // called after the file has been removed
+          console.log("remove : " +lastMin);
+          if (err) throw err; // err if the file removal failed
+        });
+      });
+
+
       //Load
       // store.load('itemCount', function (err, object) {
       //   if (err) throw err; // err if JSON parsing failed
       //   // do something with object here
 
-      //   var getItemLen = object.itemLen;
-      //   console.log(" GET Item Length : " + getItemLen);
-      //   //CHECK
-      //   if (itemLen < getItemLen) {
-      //     //He Deleted
-      //     console.log("He Deleted!");
-      //     var status = `[ ‼️ ] Youngjae deleted ${getItemLen - itemLen} post(s).\nThe post left ${itemLen}. (；ﾟДﾟ)`;
-      //     console.log(status);
-      //     TweetDel(status);
-      //   }
+      // var getItemLen = object.itemLen;
+      // console.log(" GET Item Length : " + getItemLen);
+      // //CHECK
+      // if (itemLen < getItemLen) {
+      //   //He Deleted
+      //   console.log("He Deleted!");
+      //   var status = `[ ‼️ ] Youngjae deleted ${getItemLen - itemLen} post(s).\nThe post left ${itemLen}. (；ﾟДﾟ)`;
+      //   console.log(status);
+      //   TweetDel(status);
+      // }
 
 
-        //Finish Check
-        //Add
+      //Finish Check
+      //Add
       //   var donkey = {
       //     id: 'itemCount',
       //     name: 'item',
