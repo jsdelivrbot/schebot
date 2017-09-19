@@ -52,9 +52,10 @@ server.listen(app.get('port'), function () {
 
 
 //First SETTING
-var lastMin = moment().subtract(1, 'minute').format('YYYY-MM-DD-HH-mm-00');
+var lastMin = moment().subtract(1, 'minute').format('YYYY-MM-DD HH:mm:00');
+var unixLastMinFirstSett = moment(lastMin).unix();
 var backUpLastMinData = {
-  id: lastMin, //also filename
+  id: unixLastMinFirstSett, //also filename
   "name": "item",
   "itemLen": 7
 };
@@ -187,13 +188,15 @@ function CheckMedia(num, username, url) {
 
 
       //FUNCTION CHECK DELETED
-      var currenttime = moment().format('YYYY-MM-DD-HH-mm-00');
-      var lastMin = moment().subtract(1, 'minute').format('YYYY-MM-DD-HH-mm-00');
-      console.log(currenttime, lastMin);
+      var currenttime = moment().format('YYYY-MM-DD HH:mm:00');
+      var unixCurrenttime = moment(currenttime).unix();
+      var lastMin = moment().subtract(1, 'minute').format('YYYY-MM-DD HH:mm:00');
+      var unixLastMin = moment(lastMin).unix();
+      console.log(currenttime, lastMin, unixCurrenttime, unixLastMin);
 
 
       var backUpData = {
-        id: currenttime, //also filename
+        id: unixCurrenttime, //also filename
         "name": "item",
         "itemLen": itemLen
       };
@@ -205,7 +208,7 @@ function CheckMedia(num, username, url) {
       });
 
 
-      store.load(lastMin, function (err, object) {
+      store.load(unixLastMin, function (err, object) {
         if (err) throw err; // err if JSON parsing failed
         // do something with object here
         console.log("loadded : " + lastMin);
@@ -221,9 +224,9 @@ function CheckMedia(num, username, url) {
         }
 
         //finish check
-        store.remove(lastMin, function (err) {
+        store.remove(unixLastMin, function (err) {
           // called after the file has been removed
-          console.log("remove : " +lastMin);
+          console.log("remove : " + lastMin);
           if (err) throw err; // err if the file removal failed
         });
       });
