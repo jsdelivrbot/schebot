@@ -52,18 +52,30 @@ server.listen(app.get('port'), function () {
 
 
 //First SETTING
-var lastMin = moment().subtract(1, 'minute').format('YYYY-MM-DD HH:mm:00');
-var unixLastMinFirstSett = moment(lastMin).unix();
-var backUpLastMinData = {
-  id: unixLastMinFirstSett, //also filename
-  "name": "item",
-  "itemLen": 7
-};
+var lastMinFirstSett = moment().subtract(1, 'minute').format('YYYY-MM-DD HH:mm:00');
+var unixLastMinFirstSett = moment(lastMinFirstSett).unix();
+request({
+  url: "https://www.instagram.com/333cyj333/media/",
+  json: true
+}, function (error, response, body) {
+  if (!error && response.statusCode === 200) {
+    var FitemLen = body.items.length;
 
-store.add(backUpLastMinData, function (err) {
-  console.log("first setting success");
-  if (err) throw err; // err if the save failed
+    var backUpLastMinData = {
+      id: unixLastMinFirstSett, //also filename
+      "name": "item",
+      "itemLen": FitemLen
+    };
+
+    store.add(backUpLastMinData, function (err) {
+      console.log("first setting success");
+      if (err) throw err; // err if the save failed
+    });
+
+  }
 });
+
+
 
 
 
@@ -190,9 +202,9 @@ function CheckMedia(num, username, url) {
       //FUNCTION CHECK DELETED
       var currenttime = moment().format('YYYY-MM-DD HH:mm:00');
       var unixCurrenttime = moment(currenttime).unix();
-      var lastMin = moment().subtract(1, 'minute').format('YYYY-MM-DD HH:mm:00');
-      var unixLastMin = moment(lastMin).unix();
-      console.log(currenttime, lastMin, unixCurrenttime, unixLastMin);
+      var chklastMin = moment().subtract(1, 'minute').format('YYYY-MM-DD HH:mm:00');
+      var unixLastMin = moment(chklastMin).unix();
+      console.log("Currenttime : " + currenttime, unixCurrenttime, "\nLast Minute Time : " + chklastMin, unixLastMin);
 
 
       var backUpData = {
@@ -211,9 +223,9 @@ function CheckMedia(num, username, url) {
       store.load(unixLastMin, function (err, object) {
         if (err) throw err; // err if JSON parsing failed
         // do something with object here
-        console.log("loadded : " + lastMin);
+        console.log("loadded : " + unixLastMin);
         var getItemLen = object.itemLen;
-        console.log(" GET Item Length : " + getItemLen);
+        console.log("itemLength Last Minute : " + getItemLen);
         //CHECK
         if (itemLen < getItemLen) {
           //He Deleted
@@ -226,43 +238,10 @@ function CheckMedia(num, username, url) {
         //finish check
         store.remove(unixLastMin, function (err) {
           // called after the file has been removed
-          console.log("remove : " + lastMin);
+          console.log("remove : " + chklastMin);
           if (err) throw err; // err if the file removal failed
         });
       });
-
-
-      //Load
-      // store.load('itemCount', function (err, object) {
-      //   if (err) throw err; // err if JSON parsing failed
-      //   // do something with object here
-
-      // var getItemLen = object.itemLen;
-      // console.log(" GET Item Length : " + getItemLen);
-      // //CHECK
-      // if (itemLen < getItemLen) {
-      //   //He Deleted
-      //   console.log("He Deleted!");
-      //   var status = `[ ‼️ ] Youngjae deleted ${getItemLen - itemLen} post(s).\nThe post left ${itemLen}. (；ﾟДﾟ)`;
-      //   console.log(status);
-      //   TweetDel(status);
-      // }
-
-
-      //Finish Check
-      //Add
-      //   var donkey = {
-      //     id: 'itemCount',
-      //     name: 'item',
-      //     itemLen: itemLen
-      //   };
-      //   store.add(donkey, function (err) {
-      //     // called when the file has been written
-      //     // to the /path/to/storage/location/12345.json
-      //     if (err) throw err; // err if the save failed
-      //     console.log("Stored Len!");
-      //   });
-      // });
 
       //FINISH FUNCTION CHECK DELETED
 
@@ -280,7 +259,7 @@ function CheckMedia(num, username, url) {
         if (Chkcaption == null) {
           txtcaption = "";
         }
-        console.log("CAPTION : " + txtcaption);
+        // console.log("CAPTION : " + txtcaption);
 
 
 
@@ -299,9 +278,9 @@ function CheckMedia(num, username, url) {
 
         var lastMin = moment().subtract(1, 'minute').format('YYYY-MM-DD HH:mm:00');
         var lastMin_KR = momentTz.tz(lastMin, "Asia/Seoul").format('YYYY-MM-DD HH:mm:00');
-        console.log("last min : " + lastMin);
+        // console.log("last min : " + lastMin);
         // console.log("last min KR : " + lastMin_KR);
-        console.log("timestamp_ct_format : " + timestamp_ct_format);
+        // console.log("timestamp_ct_format : " + timestamp_ct_format);
 
         // console.log("create_time_KR : " + create_time_KR);
         var chkDate = moment(timestamp_ct_format).isSame(lastMin); // true
@@ -379,8 +358,6 @@ function CheckMedia(num, username, url) {
             });
           }
 
-
-
           //VIDEO TYPE
           if (type == "video") {
             var url = body.items[num].videos.standard_resolution.url;
@@ -397,9 +374,6 @@ function CheckMedia(num, username, url) {
 
             });
           }
-
-
-
 
           //TYPE CAROUSEL
           if (type == "carousel") {
@@ -633,6 +607,8 @@ function CheckMedia(num, username, url) {
             }
 
           }
+        } if (chkDate == false) {
+          console.log("------------ NO NEW POST -------------");
         }
       }
 
