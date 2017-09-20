@@ -80,7 +80,9 @@ function fetchJson() {
   })
 }
 
-  //First SETTING
+
+function FirstSetting(){
+    //First SETTING
   var lastMinFirstSett = moment().subtract(1, 'minute').format('YYYY-MM-DD HH:mm:00');
   var unixLastMinFirstSett = moment(lastMinFirstSett).unix();
   request({
@@ -103,8 +105,10 @@ function fetchJson() {
   
     }
   });
+}
 
-  
+
+FirstSetting();
 fetchJson(); // Start fetching to our JSON cache
 
 
