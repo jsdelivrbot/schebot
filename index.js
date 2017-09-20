@@ -51,36 +51,6 @@ server.listen(app.get('port'), function () {
 
 
 
-//First SETTING
-var lastMinFirstSett = moment().subtract(1, 'minute').format('YYYY-MM-DD HH:mm:00');
-var unixLastMinFirstSett = moment(lastMinFirstSett).unix();
-request({
-  url: "https://www.instagram.com/333cyj333/media/",
-  json: true
-}, function (error, response, body) {
-  if (!error && response.statusCode === 200) {
-    var FitemLen = body.items.length;
-
-    var backUpLastMinData = {
-      id: unixLastMinFirstSett, //also filename
-      "name": "item",
-      "itemLen": FitemLen
-    };
-
-    store.add(backUpLastMinData, function (err) {
-      console.log("first setting success");
-      if (err) throw err; // err if the save failed
-    });
-
-  }
-});
-
-
-
-
-
-
-
 // app.post('/fetchJson/:username', function (req, res) {
 var username = "333cyj333";
 var url = `https://www.instagram.com/${username}/media/`;
@@ -95,6 +65,7 @@ function fetchJson() {
   var url = `https://www.instagram.com/${username}/media/`;
   CheckMedia(num, username, url);
 
+
   https.get(url, function (res) {
     body = '';
 
@@ -108,37 +79,70 @@ function fetchJson() {
     });
   })
 }
+
+  //First SETTING
+  var lastMinFirstSett = moment().subtract(1, 'minute').format('YYYY-MM-DD HH:mm:00');
+  var unixLastMinFirstSett = moment(lastMinFirstSett).unix();
+  request({
+    url: "https://www.instagram.com/333cyj333/media/",
+    json: true
+  }, function (error, response, body) {
+    if (!error && response.statusCode === 200) {
+      var FitemLen = body.items.length;
+  
+      var backUpLastMinData = {
+        id: unixLastMinFirstSett, //also filename
+        "name": "item",
+        "itemLen": FitemLen
+      };
+  
+      store.add(backUpLastMinData, function (err) {
+        console.log("first setting success");
+        if (err) throw err; // err if the save failed
+      });
+  
+    }
+  });
+
+  
 fetchJson(); // Start fetching to our JSON cache
 
+
+
+
 // Start watching our cache file
-fs.watch(cacheFile, function (event, filename) {
-  if (event == 'change') {
-    console.log("-- File Change -- ")
-    fs.readFile('./public/media/cachefile.json', function (err, data) {
-      if (!err) {
-        connectedSockets.forEach(function (socket) {
-          socket.emit('data', JSON.parse(data));//JSON.parse(data)
-          console.log("-- emited data --")
-        });
-      }
-    });
+// fs.watch(cacheFile, function (event, filename) {
+//   if (event == 'change') {
+//     console.log("-- File Change -- ")
+//     fs.readFile('./public/media/cachefile.json', function (err, data) {
+//       if (!err) {
+//         connectedSockets.forEach(function (socket) {
+//           socket.emit('data', JSON.parse(data));//JSON.parse(data)
+//           console.log("-- emited data --")
+//         });
+//       }
+//     });
 
 
-  }
-});
-const io = socketIO(server);
-io.on('connection', (socket) => {
-  console.log('\n\nClient connected');
-  connectedSockets.push(socket);
-  socket.on('disconnect', () => console.log('\n\nClient disconnected'));
-  socket.on("error", (err) => {
-    console.log(err);
-    socket.destroy();
-  });
-  socket.on('close', function (exception) {
-    console.log('SOCKET CLOSED');
-  })
-});
+//   }
+// });
+
+
+// const io = socketIO(server);
+// io.on('connection', (socket) => {
+//   console.log('\n\nClient connected');
+//   connectedSockets.push(socket);
+//   socket.on('disconnect', () => console.log('\n\nClient disconnected'));
+//   socket.on("error", (err) => {
+//     console.log(err);
+//     socket.destroy();
+//   });
+//   socket.on('close', function (exception) {
+//     console.log('SOCKET CLOSED');
+//   })
+// });
+
+
 
 // setInterval(() => io.emit('time', new Date().toTimeString()), 1000);
 // res.sendStatus(400);
