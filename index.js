@@ -108,7 +108,7 @@ function FirstSetting(){
 }
 
 
-FirstSetting();
+//FirstSetting();
 fetchJson(); // Start fetching to our JSON cache
 
 
@@ -215,41 +215,41 @@ function CheckMedia(num, username, url) {
       console.log("Currenttime : " + currenttime, unixCurrenttime, "\nLast Minute Time : " + chklastMin, unixLastMin);
 
 
-      var backUpData = {
-        id: unixCurrenttime, //also filename
-        "name": "item",
-        "itemLen": itemLen
-      };
+      // var backUpData = {
+      //   id: unixCurrenttime, //also filename
+      //   "name": "item",
+      //   "itemLen": itemLen
+      // };
 
-      store.add(backUpData, function (err) {
-        // called when the file has been written
-        // to the /path/to/storage/location/12345.json
-        if (err) throw err; // err if the save failed
-      });
+      // store.add(backUpData, function (err) {
+      //   // called when the file has been written
+      //   // to the /path/to/storage/location/12345.json
+      //   if (err) throw err; // err if the save failed
+      // });
 
 
-      store.load(unixLastMin, function (err, object) {
-        if (err) throw err; // err if JSON parsing failed
-        // do something with object here
-        console.log("loadded : " + unixLastMin);
-        var getItemLen = object.itemLen;
-        console.log("itemLength Last Minute : " + getItemLen);
-        //CHECK
-        if (itemLen < getItemLen) {
-          //He Deleted
-          console.log("He Deleted!");
-          var status = `[ ‼️ ] Youngjae deleted ${getItemLen - itemLen} post(s).\nThe post left ${itemLen}. (；ﾟДﾟ)`;
-          console.log(status);
-          TweetDel(status);
-        }
+      // store.load(unixLastMin, function (err, object) {
+      //   if (err) throw err; // err if JSON parsing failed
+      //   // do something with object here
+      //   console.log("loadded : " + unixLastMin);
+      //   var getItemLen = object.itemLen;
+      //   console.log("itemLength Last Minute : " + getItemLen);
+      //   //CHECK
+      //   if (itemLen < getItemLen) {
+      //     //He Deleted
+      //     console.log("He Deleted!");
+      //     var status = `[ ‼️ ] Youngjae deleted ${getItemLen - itemLen} post(s).\nThe post left ${itemLen}. (；ﾟДﾟ)`;
+      //     console.log(status);
+      //     TweetDel(status);
+      //   }
 
-        //finish check
-        store.remove(unixLastMin, function (err) {
-          // called after the file has been removed
-          console.log("remove : " + chklastMin);
-          if (err) throw err; // err if the file removal failed
-        });
-      });
+      //   //finish check
+      //   store.remove(unixLastMin, function (err) {
+      //     // called after the file has been removed
+      //     console.log("remove : " + chklastMin);
+      //     if (err) throw err; // err if the file removal failed
+      //   });
+      // });
 
       //FINISH FUNCTION CHECK DELETED
 
