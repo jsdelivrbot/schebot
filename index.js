@@ -224,12 +224,12 @@ function CheckMedia(num, username, url) {
       store.add(backUpData, function (err) {
         // called when the file has been written
         // to the /path/to/storage/location/12345.json
-        if (err) throw err; // err if the save failed
+        if (err) console.log(err); // err if the save failed
       });
 
 
       store.load(unixLastMin, function (err, object) {
-        if (err) throw err; // err if JSON parsing failed
+        if (err) console.log(err); // err if JSON parsing failed
         // do something with object here
         console.log("loadded : " + unixLastMin);
         var getItemLen = object.itemLen;
@@ -247,7 +247,7 @@ function CheckMedia(num, username, url) {
         store.remove(unixLastMin, function (err) {
           // called after the file has been removed
           console.log("remove : " + chklastMin);
-          if (err) throw err; // err if the file removal failed
+          if (err) console.log(err); // err if the file removal failed
         });
       });
 
@@ -563,7 +563,7 @@ function CheckMedia(num, username, url) {
                 });
               });
             }
-            if (carouselURL_image.length > 9) {
+            if (carouselURL_image.length >= 9) {
               console.log("carouselURL_image more then 9");
               var dataLength = carouselURL_image.length;
               var newAllData = [];
@@ -615,7 +615,8 @@ function CheckMedia(num, username, url) {
             }
 
           }
-        } if (chkDate == false) {
+        } 
+        if (chkDate == false) {
           console.log("------------ NO NEW POST -------------");
         }
       }
