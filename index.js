@@ -99,7 +99,8 @@ function FirstSetting(){
       };
   
       store.add(backUpLastMinData, function (err) {
-        console.log("first setting success");
+        console.log("--------------First Setting Success-------------");
+        fetchJson(); // Start fetching to our JSON cache
         if (err) throw err; // err if the save failed
       });
   
@@ -109,7 +110,7 @@ function FirstSetting(){
 
 
 FirstSetting();
-fetchJson(); // Start fetching to our JSON cache
+
 
 
 
@@ -194,8 +195,14 @@ app.post('/getJson/:username/:num', function (req, res) {
 
 
 
+//*************************************//
+//*************************************//
+//*************************************//
+//********START CHECK MEDIA************//
+//*************************************//
+//*************************************//
+//*************************************//
 function CheckMedia(num, username, url) {
-
   //START
   request({
     url: url,
@@ -250,8 +257,10 @@ function CheckMedia(num, username, url) {
           if (err) console.log(err); // err if the file removal failed
         });
       });
-
       //FINISH FUNCTION CHECK DELETED
+
+
+
 
       if (itemLen != 0) { //Check When ItemLen is 0
         var type = body.items[num].type;
