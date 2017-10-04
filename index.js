@@ -59,7 +59,7 @@ var connectedSockets = [];
 
 function fetchJson() {
   //CheckMedia if file change
-  console.log("start check media");
+  console.log("-------------[START CHECK MEDIA-----------");
   var num = 0;
   var username = "333cyj333";
   var url = `https://www.instagram.com/${username}/media/`;
@@ -81,35 +81,35 @@ function fetchJson() {
 }
 
 
-function FirstSetting(){
-    //First SETTING
+function FirstSetting(username) {
+  //First SETTING
   var lastMinFirstSett = moment().subtract(1, 'minute').format('YYYY-MM-DD HH:mm:00');
   var unixLastMinFirstSett = moment(lastMinFirstSett).unix();
   request({
-    url: "https://www.instagram.com/333cyj333/media/",
+    url: `https://www.instagram.com/${username}/?__a=1`,
     json: true
   }, function (error, response, body) {
     if (!error && response.statusCode === 200) {
-      var FitemLen = body.items.length;
-  
+      var FitemLen = body.user.media.count;
+
       var backUpLastMinData = {
         id: unixLastMinFirstSett, //also filename
         "name": "item",
         "itemLen": FitemLen
       };
-  
+
       store.add(backUpLastMinData, function (err) {
         console.log("--------------First Setting Success-------------");
         fetchJson(); // Start fetching to our JSON cache
         if (err) throw err; // err if the save failed
       });
-  
+
     }
   });
 }
 
 
-FirstSetting();
+FirstSetting("333cyj333");
 
 
 
@@ -214,6 +214,7 @@ function CheckMedia(num, username, url) {
       console.log("itemLength :  " + itemLen);
 
 
+      
       //FUNCTION CHECK DELETED
       var currenttime = moment().format('YYYY-MM-DD HH:mm:00');
       var unixCurrenttime = moment(currenttime).unix();
@@ -221,41 +222,50 @@ function CheckMedia(num, username, url) {
       var unixLastMin = moment(chklastMin).unix();
       console.log("Currenttime : " + currenttime, unixCurrenttime, "\nLast Minute Time : " + chklastMin, unixLastMin);
 
+      request({
+        url: `https://www.instagram.com/${username}/?__a=1`,
+        json: true
+      }, function (error, response, body) {
+        if (!error && response.statusCode === 200) {
+          var count = body.user.media.count;
+          console.log("MEDIA LENGTH : " + count);
 
-      var backUpData = {
-        id: unixCurrenttime, //also filename
-        "name": "item",
-        "itemLen": itemLen
-      };
+          var backUpData = {
+            id: unixCurrenttime, //also filename
+            "name": "item",
+            "itemLen": count
+          };
 
-      store.add(backUpData, function (err) {
-        // called when the file has been written
-        // to the /path/to/storage/location/12345.json
-        if (err) console.log(err); // err if the save failed
-      });
+          store.add(backUpData, function (err) {
+            // called when the file has been written
+            // to the /path/to/storage/location/12345.json
+            if (err) console.log(err); // err if the save failed
+          });
 
 
-      store.load(unixLastMin, function (err, object) {
-        if (err) console.log(err); // err if JSON parsing failed
-        // do something with object here
-        console.log("loadded : " + unixLastMin);
-        var getItemLen = object.itemLen;
-        console.log("itemLength Last Minute : " + getItemLen);
-        //CHECK
-        if (itemLen < getItemLen) {
-          //He Deleted
-          console.log("He Deleted!");
-          var status = `[ ‼️ ] Youngjae deleted ${getItemLen - itemLen} post(s).\nThe post left ${itemLen}. (；ﾟДﾟ)`;
-          console.log(status);
-          TweetDel(status);
+          store.load(unixLastMin, function (err, object) {
+            if (err) console.log(err); // err if JSON parsing failed
+            // do something with object here
+            console.log("loadded : " + unixLastMin);
+            var getItemLen = object.itemLen;
+            console.log("itemLength Last Minute : " + getItemLen);
+            //CHECK
+            if (count < getItemLen) {
+              //He Deleted
+              console.log("He Deleted!");
+              var status = `[ ‼️ ] Youngjae deleted ${getItemLen - count} post(s).\nThe post left ${count}. (；ﾟДﾟ)`;
+              console.log(status);
+              //TweetDel(status);
+            }
+
+            //finish check
+            store.remove(unixLastMin, function (err) {
+              // called after the file has been removed
+              console.log("remove : " + chklastMin);
+              if (err) console.log(err); // err if the file removal failed
+            });
+          });
         }
-
-        //finish check
-        store.remove(unixLastMin, function (err) {
-          // called after the file has been removed
-          console.log("remove : " + chklastMin);
-          if (err) console.log(err); // err if the file removal failed
-        });
       });
       //FINISH FUNCTION CHECK DELETED
 
@@ -624,7 +634,7 @@ function CheckMedia(num, username, url) {
             }
 
           }
-        } 
+        }
         if (chkDate == false) {
           console.log("------------ NO NEW POST -------------");
         }
