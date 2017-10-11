@@ -255,7 +255,7 @@ function CheckMedia(num, username, url) {
               console.log("He Deleted!");
               var status = `[ ‼️ ] Youngjae deleted ${getItemLen - count} post(s).\nThe post left ${count}. (；ﾟДﾟ)`;
               console.log(status);
-              //TweetDel(status);
+              TweetDel(status);
             }
 
             //finish check
