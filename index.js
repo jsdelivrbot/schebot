@@ -220,7 +220,7 @@ function CheckMedia(num, username, url) {
       var unixCurrenttime = moment(currenttime).unix();
       var chklastMin = moment().subtract(1, 'minute').format('YYYY-MM-DD HH:mm:00');
       var unixLastMin = moment(chklastMin).unix();
-      console.log("Currenttime : " + currenttime, unixCurrenttime, "\nLast Minute Time : " + chklastMin, unixLastMin);
+     // console.log("Currenttime : " + currenttime, unixCurrenttime, "\nLast Minute Time : " + chklastMin, unixLastMin);
 
       request({
         url: `https://www.instagram.com/${username}/?__a=1`,
@@ -261,7 +261,7 @@ function CheckMedia(num, username, url) {
             //finish check
             store.remove(unixLastMin, function (err) {
               // called after the file has been removed
-              console.log("remove : " + chklastMin);
+              //console.log("remove : " + chklastMin);
               if (err) console.log(err); // err if the file removal failed
             });
           });
