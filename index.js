@@ -246,9 +246,9 @@ function CheckMedia(num, username, url) {
           store.load(unixLastMin, function (err, object) {
             if (err) console.log(err); // err if JSON parsing failed
             // do something with object here
-            console.log("loadded : " + unixLastMin);
+            //console.log("loadded : " + unixLastMin);
             var getItemLen = object.itemLen;
-            console.log("itemLength Last Minute : " + getItemLen);
+            //console.log("itemLength Last Minute : " + getItemLen);
             //CHECK
             if (count < getItemLen) {
               //He Deleted
