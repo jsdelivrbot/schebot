@@ -10,7 +10,7 @@ npm-debug.log
 # Docker
 Dockerfile
 docker-compose.yml
-
+test.js
 *.jpg
 *.jpg
 *.mp4
