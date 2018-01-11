@@ -66,7 +66,7 @@ app.post('/getJson/:username/:num', function (req, res) {
 
 
 
-
+//Adding for reslove bugging on heroku
 var username = "333cyj333";
 FirstSetting(username);
 

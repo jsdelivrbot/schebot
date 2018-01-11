@@ -14,3 +14,5 @@ test.js
 *.jpg
 *.jpg
 *.mp4
+auth_lenayk.json
+package-lock.json
