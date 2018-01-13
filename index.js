@@ -256,8 +256,10 @@ function CheckMediaDataType(code) {
             var url = nodes.display_url;
             console.log(url);
             //EDIT URL
-            var splitUrl = url.split("/");
-            var newUrl = url.replace(splitUrl[7] + "/", "").replace(splitUrl[4] + "/", "");
+            //DON'T SPLIT ANYMORE
+            // var splitUrl = url.split("/");
+            // var newUrl = url.replace(splitUrl[7] + "/", "").replace(splitUrl[4] + "/", "");
+            var newUrl = url;
             console.log(newUrl);
 
             var stream = request(newUrl).pipe(fs.createWriteStream(`./public/media/${code}.jpg`));
@@ -314,9 +316,10 @@ function CheckMediaDataType(code) {
                 if (nodes.edge_sidecar_to_children.edges[c].node.__typename == "GraphImage") {
                     var carouselURL = nodes.edge_sidecar_to_children.edges[c].node.display_url;
 
-                    var splitUrl = carouselURL.split("/");
-                    var newUrl = carouselURL.replace(splitUrl[7] + "/", "").replace(splitUrl[4] + "/", "");
-                    console.log(newUrl);
+                    //var splitUrl = carouselURL.split("/");
+                   // var newUrl = carouselURL.replace(splitUrl[7] + "/", "").replace(splitUrl[4] + "/", "");
+                   var newUrl = carouselURL;
+                   console.log(newUrl);
 
                     carouselURL_image.push(newUrl);
 
