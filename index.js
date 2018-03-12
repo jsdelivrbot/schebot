@@ -152,14 +152,14 @@ function AlbumSales() {
 
                     if (offline_up == 0 && online_up > 0) {
                         newstatus += `ONLINE SALES : ${online_sales_currency}  (+${online_up_currency})`;
-                        newstatus += `\nOFFLINE SALES : ${offline_sales_currency}  \n\n`;
+                        newstatus += `\nOFFLINE SALES : ${offline_sales_currency}  \n\n#LOOK #GOT7 #갓세븐 #LOOKGOT7 #EYESONYOU`;
 
                     } if (online_up == 0 && offline_up > 0) {
                         newstatus += `ONLINE SALES : ${online_sales_currency}  `;
-                        newstatus += `\nOFFLINE SALES : ${offline_sales_currency} (+${offline_up_currency})\n\n`;
+                        newstatus += `\nOFFLINE SALES : ${offline_sales_currency} (+${offline_up_currency})\n\n#LOOK #GOT7 #갓세븐 #LOOKGOT7 #EYESONYOU`;
                     } if (online_up > 0 && offline_up > 0) {
                         newstatus += `ONLINE SALES : ${online_sales_currency}  (+${online_up_currency})`;
-                        newstatus += `\nOFFLINE SALES : ${offline_sales_currency} (+${offline_up_currency})\n\n`;
+                        newstatus += `\nOFFLINE SALES : ${offline_sales_currency} (+${offline_up_currency})\n\n#LOOK #GOT7 #갓세븐 #LOOKGOT7 #EYESONYOU`;
                     }
                     console.log(newstatus);
 
