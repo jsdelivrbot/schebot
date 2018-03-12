@@ -122,9 +122,10 @@ function AlbumSales() {
         if (!error && response.statusCode === 200) {
             var online_sales = body.data.online_sales;
             var offline_sales = body.data.offline_sales;
+            var sum_sales_volume = online_sales + offline_sales;//body.data.sum_sales_volume;
             console.log("Online sales : " + online_sales);
             console.log("Offline sales : " + offline_sales);
-
+            console.log("TOTAL : " + sum_sales_volume);
 
             store.load("album_sales", function (err, object) {
                 if (err) console.log(err);
@@ -143,7 +144,7 @@ function AlbumSales() {
                     var newstatus = `${create_time_KR} KST \n(ALBUM SALES) \n\n`;
                     var online_sales_currency = online_sales.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
                     var offline_sales_currency = offline_sales.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
-
+                    var sum_sales_currency = sum_sales_volume.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
                     //Check Rise Up
                     var online_up = online_sales - chkOnline_sales;
                     var offline_up = offline_sales - chkOffline_sales;
@@ -152,15 +153,19 @@ function AlbumSales() {
 
                     if (offline_up == 0 && online_up > 0) {
                         newstatus += `ONLINE SALES : ${online_sales_currency}  (+${online_up_currency})`;
-                        newstatus += `\nOFFLINE SALES : ${offline_sales_currency}  \n\n#LOOK #GOT7 #갓세븐 #LOOKGOT7 #EYESONYOU`;
+                        newstatus += `\nOFFLINE SALES : ${offline_sales_currency}`;
+                        
 
                     } if (online_up == 0 && offline_up > 0) {
                         newstatus += `ONLINE SALES : ${online_sales_currency}  `;
-                        newstatus += `\nOFFLINE SALES : ${offline_sales_currency} (+${offline_up_currency})\n\n#LOOK #GOT7 #갓세븐 #LOOKGOT7 #EYESONYOU`;
+                        newstatus += `\nOFFLINE SALES : ${offline_sales_currency} (+${offline_up_currency})`;
                     } if (online_up > 0 && offline_up > 0) {
                         newstatus += `ONLINE SALES : ${online_sales_currency}  (+${online_up_currency})`;
-                        newstatus += `\nOFFLINE SALES : ${offline_sales_currency} (+${offline_up_currency})\n\n#LOOK #GOT7 #갓세븐 #LOOKGOT7 #EYESONYOU`;
+                        newstatus += `\nOFFLINE SALES : ${offline_sales_currency} (+${offline_up_currency})`;
                     }
+                    newstatus += `\nTOTAL : ${sum_sales_currency}`;
+                    newstatus += `\n\n#LOOK #GOT7 #갓세븐 #LOOKGOT7 #EYESONYOU`;
+                    
                     console.log(newstatus);
 
 
@@ -203,7 +208,8 @@ function AlbumSales() {
                     var backUpData = {
                         id: "album_sales", //also filename
                         "online_sales": online_sales,
-                        "offline_sales": offline_sales
+                        "offline_sales": offline_sales,
+                        "sum_sales_volume": sum_sales_volume
                     };
                     console.log("let's backup data");
                     store.add(backUpData, function (err) {
