@@ -108,7 +108,7 @@ function fetchJson() {
     var username = "333cyj333";
     AlbumSales();
     DoCheckMedia(username);
-    
+
     setTimeout(fetchJson, 60000); // Fetch it again in a 60 second
 
 }
@@ -143,18 +143,60 @@ function AlbumSales() {
                     var newstatus = `${create_time_KR} KST \n(ALBUM SALES) \n\n`;
                     var online_sales_currency = online_sales.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
                     var offline_sales_currency = offline_sales.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
-                    console.log()
-                    newstatus += `ONLINE SALES : ${online_sales_currency}`;
-                    newstatus += `\nOFFLINE SALES : ${offline_sales_currency}\n\n#LOOK #GOT7 #갓세븐 #LOOKGOT7 #EYESONYOU`;
+
+                    //Check Rise Up
+                    var online_up = online_sales - chkOnline_sales;
+                    var offline_up = offline_sales - chkOffline_sales;
+                    var online_up_currency = online_up.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
+                    var offline_up_currency = offline_up.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
+
+                    if (offline_up == 0 && online_up > 0) {
+                        newstatus += `ONLINE SALES : ${online_sales_currency}  (+${online_up_currency})`;
+                        newstatus += `\nOFFLINE SALES : ${offline_sales_currency}  \n\n`;
+
+                    } if (online_up == 0 && offline_up > 0) {
+                        newstatus += `ONLINE SALES : ${online_sales_currency}  `;
+                        newstatus += `\nOFFLINE SALES : ${offline_sales_currency} (+${offline_up_currency})\n\n`;
+                    } if (online_up > 0 && offline_up > 0) {
+                        newstatus += `ONLINE SALES : ${online_sales_currency}  (+${online_up_currency})`;
+                        newstatus += `\nOFFLINE SALES : ${offline_sales_currency} (+${offline_up_currency})\n\n`;
+                    }
                     console.log(newstatus);
 
 
-                    var secret = require("./cyj5s"); //save before launch (auth)
-                    var Twitter = new TwitterPackage(secret);
 
-                    Twitter.post('statuses/update', { status: newstatus }, function (error, tweet, response) {
-                        if (error) throw error;
-                        console.log("Tweeted!!!");
+
+                    // Twitter.post('statuses/update', { status: newstatus }, function (error, tweet, response) {
+                    //     if (error) throw error;
+                    //     console.log("Tweeted!!!");
+                    // });
+                    //TWEET WITH IMAGE
+                    const stream = screenshot('http://www.hanteochart.com/ranking/music/album?idx=49801290&rank_artist_type=1&term=0', '1280x1080', { crop: true, selector: '.demo-container' });
+
+                    stream.pipe(fs.createWriteStream(`./public/media/graph.png`));
+                    stream.on('finish', function () {
+
+                        var getStatus = newstatus;
+
+                        var secret = require("./cyj5s"); //save before launch (auth)
+                        var Twitter = new TwitterPackage(secret);
+                        var data = require('fs').readFileSync(`./public/media/graph.png`);
+                        Twitter.post('media/upload', { media: data }, function (error, media, response) {
+                            if (!error) {
+                                var newstatus = {
+                                    status: getStatus,
+                                    media_ids: media.media_id_string
+                                }
+                                Twitter.post('statuses/update', newstatus, function (error, tweet, response) {
+                                    if (!error) {
+                                        console.log("done");
+                                    }
+                                });
+
+                            } if (error) {
+                                console.log(error);
+                            }
+                        });
                     });
 
                     //BACKUP DATA
