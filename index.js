@@ -141,8 +141,11 @@ function AlbumSales() {
 
                     // var Twitter = new TwitterPackage(secret);
                     var newstatus = `${create_time_KR} KST \n(ALBUM SALES) \n\n`;
-                    newstatus += `ONLINE SALES : ${online_sales}`;
-                    newstatus += `\nOFFLINE SALES : ${offline_sales}\n\n#LOOK #GOT7 #갓세븐 #LOOKGOT7 #EYESONYOU`;
+                    var online_sales_currency = online_sales.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
+                    var offline_sales_currency = offline_sales.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
+                    console.log()
+                    newstatus += `ONLINE SALES : ${online_sales_currency}`;
+                    newstatus += `\nOFFLINE SALES : ${offline_sales_currency}\n\n#LOOK #GOT7 #갓세븐 #LOOKGOT7 #EYESONYOU`;
                     console.log(newstatus);
 
 
