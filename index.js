@@ -106,9 +106,73 @@ function fetchJson() {
     //CheckMedia if file change
     console.log("-------------[START CHECK MEDIA]-----------");
     var username = "333cyj333";
+    AlbumSales();
     DoCheckMedia(username);
+    
     setTimeout(fetchJson, 60000); // Fetch it again in a 60 second
 
+}
+
+function AlbumSales() {
+
+    request({
+        url: `http://www.hanteochart.com/chart/onoff/body?album_idx=49801290&term=6`,
+        json: true
+    }, function (error, response, body) {
+        if (!error && response.statusCode === 200) {
+            var online_sales = body.data.online_sales;
+            var offline_sales = body.data.offline_sales;
+            console.log("Online sales : " + online_sales);
+            console.log("Offline sales : " + offline_sales);
+
+
+            store.load("album_sales", function (err, object) {
+                if (err) console.log(err);
+
+
+                var chkOnline_sales = object.online_sales;
+                var chkOffline_sales = object.offline_sales;
+                if (chkOnline_sales != online_sales || chkOffline_sales != offline_sales) {
+                    //TWEET
+                    console.log("let's tweet!");
+
+                    var create_time_KR = momentTz.tz(moment(), "Asia/Seoul").format('HH:mm');
+                    console.log(create_time_KR);
+
+                    // var Twitter = new TwitterPackage(secret);
+                    var newstatus = `${create_time_KR} KST \n(ALBUM SALES) \n\n`;
+                    newstatus += `ONLINE SALES : ${online_sales}`;
+                    newstatus += `\nOFFLINE SALES : ${offline_sales}\n\n#LOOK #GOT7 #갓세븐 #LOOKGOT7 #EYESONYOU`;
+                    console.log(newstatus);
+
+
+                    var secret = require("./cyj5s"); //save before launch (auth)
+                    var Twitter = new TwitterPackage(secret);
+
+                    Twitter.post('statuses/update', { status: newstatus }, function (error, tweet, response) {
+                        if (error) throw error;
+                        console.log("Tweeted!!!");
+                    });
+
+                    //BACKUP DATA
+                    var backUpData = {
+                        id: "album_sales", //also filename
+                        "online_sales": online_sales,
+                        "offline_sales": offline_sales
+                    };
+                    console.log("let's backup data");
+                    store.add(backUpData, function (err) {
+                        // called when the file has been written
+                        // to the /path/to/storage/location/12345.json
+                        if (err) console.log(err); // err if the save failed
+                    });
+                }
+
+            }
+            );
+
+        }
+    });
 }
 
 
@@ -317,9 +381,9 @@ function CheckMediaDataType(code) {
                     var carouselURL = nodes.edge_sidecar_to_children.edges[c].node.display_url;
 
                     //var splitUrl = carouselURL.split("/");
-                   // var newUrl = carouselURL.replace(splitUrl[7] + "/", "").replace(splitUrl[4] + "/", "");
-                   var newUrl = carouselURL;
-                   console.log(newUrl);
+                    // var newUrl = carouselURL.replace(splitUrl[7] + "/", "").replace(splitUrl[4] + "/", "");
+                    var newUrl = carouselURL;
+                    console.log(newUrl);
 
                     carouselURL_image.push(newUrl);
 
