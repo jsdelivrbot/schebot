@@ -115,126 +115,132 @@ function fetchJson() {
 
 function AlbumSales() {
 
-    request({
-        url: `http://www.hanteochart.com/chart/onoff/body?album_idx=49801290&term=6`,
-        json: true
-    }, function (error, response, body) {
-        if (!error && response.statusCode === 200) {
-            var online_sales = body.data.online_sales;
-            var offline_sales = body.data.offline_sales;
-            var sum_sales_volume = online_sales + offline_sales;//body.data.sum_sales_volume;
-            console.log("Online sales : " + online_sales);
-            console.log("Offline sales : " + offline_sales);
-            console.log("Sum sales volume : " + sum_sales_volume);
-            if (online_sales != 0 && offline_sales != 0) {
-                store.load("album_sales", function (err, object) {
-                    if (err) console.log(err);
+    //Check Minute
+    var current_time = moment().format('mm');
+    console.log("current time : " + current_time);
+    if (current_time == "30" || current_time == "00") {
+        request({
+            url: `http://www.hanteochart.com/chart/onoff/body?album_idx=49801290&term=6`,
+            json: true
+        }, function (error, response, body) {
+            if (!error && response.statusCode === 200) {
+                var online_sales = body.data.online_sales;
+                var offline_sales = body.data.offline_sales;
+                var sum_sales_volume = online_sales + offline_sales;//body.data.sum_sales_volume;
+                console.log("Online sales : " + online_sales);
+                console.log("Offline sales : " + offline_sales);
+                console.log("Sum sales volume : " + sum_sales_volume);
+                if (online_sales != 0 && offline_sales != 0) {
+                    store.load("album_sales", function (err, object) {
+                        if (err) console.log(err);
 
 
-                    var chkOnline_sales = object.online_sales;
-                    var chkOffline_sales = object.offline_sales;
-                    var chkTotal_sales = object.sum_sales_volume;
-                    var chkPrv_sales = object.previous_sales;
+                        var chkOnline_sales = object.online_sales;
+                        var chkOffline_sales = object.offline_sales;
+                        var chkTotal_sales = object.sum_sales_volume;
+                        var chkPrv_sales = object.previous_sales;
 
-                    var TOTAL_SALES = sum_sales_volume + chkPrv_sales;
-                    console.log("**** TOTAL SALES : " + TOTAL_SALES);
-                    if (chkOnline_sales != online_sales || chkOffline_sales != offline_sales) {
-                        //TWEET
-                        console.log("let's tweet!");
+                        var TOTAL_SALES = sum_sales_volume + chkPrv_sales;
+                        console.log("**** TOTAL SALES : " + TOTAL_SALES);
+                        if (chkOnline_sales != online_sales || chkOffline_sales != offline_sales) {
+                            //TWEET
+                            console.log("let's tweet!");
 
-                        var create_time_KR = momentTz.tz(moment(), "Asia/Seoul").format('HH:mm');
-                        console.log(create_time_KR);
+                            var create_time_KR = momentTz.tz(moment(), "Asia/Seoul").format('HH:mm');
+                            console.log(create_time_KR);
 
-                        // var Twitter = new TwitterPackage(secret);
-                        var newstatus = `${create_time_KR} KST \n(ALBUM SALES) \n\n`;
-                        var online_sales_currency = online_sales.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
-                        var offline_sales_currency = offline_sales.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
-                        var sum_sales_currency = TOTAL_SALES.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
-                        //Check Rise Up
-                        var online_up = online_sales - chkOnline_sales;
-                        var offline_up = offline_sales - chkOffline_sales;
-                        var online_up_currency = online_up.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
-                        var offline_up_currency = offline_up.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
+                            // var Twitter = new TwitterPackage(secret);
+                            var newstatus = `${create_time_KR} KST \n(ALBUM SALES) \n\n`;
+                            var online_sales_currency = online_sales.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
+                            var offline_sales_currency = offline_sales.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
+                            var sum_sales_currency = TOTAL_SALES.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
+                            //Check Rise Up
+                            var online_up = online_sales - chkOnline_sales;
+                            var offline_up = offline_sales - chkOffline_sales;
+                            var online_up_currency = online_up.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
+                            var offline_up_currency = offline_up.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
 
-                        if (offline_up == 0 && online_up > 0) {
-                            newstatus += `ONLINE SALES : ${online_sales_currency}  (+${online_up_currency})`;
-                            newstatus += `\nOFFLINE SALES : ${offline_sales_currency}`;
-                            newstatus += `\nTOTAL : ${sum_sales_currency}`;
-                            newstatus += `\n\n#LOOK #GOT7 #갓세븐 #LOOKGOT7 #EYESONYOU`;
+                            if (offline_up == 0 && online_up > 0) {
+                                newstatus += `ONLINE SALES : ${online_sales_currency}  (+${online_up_currency})`;
+                                newstatus += `\nOFFLINE SALES : ${offline_sales_currency}`;
+                                newstatus += `\nTOTAL : ${sum_sales_currency}`;
+                                newstatus += `\n\n#LOOK #GOT7 #갓세븐 #LOOKGOT7 #EYESONYOU`;
 
 
-                        } if (online_up == 0 && offline_up > 0) {
-                            newstatus += `ONLINE SALES : ${online_sales_currency}  `;
-                            newstatus += `\nOFFLINE SALES : ${offline_sales_currency} (+${offline_up_currency})`;
-                            newstatus += `\nTOTAL : ${sum_sales_currency}`;
-                            newstatus += `\n\n#LOOK #GOT7 #갓세븐 #LOOKGOT7 #EYESONYOU`;
-                        } if (online_up > 0 && offline_up > 0) {
-                            newstatus += `ONLINE SALES : ${online_sales_currency}  (+${online_up_currency})`;
-                            newstatus += `\nOFFLINE SALES : ${offline_sales_currency} (+${offline_up_currency})`;
-                            newstatus += `\nTOTAL : ${sum_sales_currency}`;
-                            newstatus += `\n\n#LOOK #GOT7 #갓세븐 #LOOKGOT7 #EYESONYOU`;
+                            } if (online_up == 0 && offline_up > 0) {
+                                newstatus += `ONLINE SALES : ${online_sales_currency}  `;
+                                newstatus += `\nOFFLINE SALES : ${offline_sales_currency} (+${offline_up_currency})`;
+                                newstatus += `\nTOTAL : ${sum_sales_currency}`;
+                                newstatus += `\n\n#LOOK #GOT7 #갓세븐 #LOOKGOT7 #EYESONYOU`;
+                            } if (online_up > 0 && offline_up > 0) {
+                                newstatus += `ONLINE SALES : ${online_sales_currency}  (+${online_up_currency})`;
+                                newstatus += `\nOFFLINE SALES : ${offline_sales_currency} (+${offline_up_currency})`;
+                                newstatus += `\nTOTAL : ${sum_sales_currency}`;
+                                newstatus += `\n\n#LOOK #GOT7 #갓세븐 #LOOKGOT7 #EYESONYOU`;
+                            }
+
+
+                            console.log(newstatus);
+
+                            var secret = require("./cyj5s");
+                            var Twitter = new TwitterPackage(secret);
+                            Twitter.post('statuses/update', { status: newstatus }, function (error, tweet, response) {
+                                if (error) throw error;
+                                console.log("Tweeted!!!");
+                            });
+                            //TWEET WITH IMAGE
+                            // const stream = screenshot('http://www.hanteochart.com/ranking/music/album?idx=49801290&rank_artist_type=1&term=0', '1280x1080', { crop: true, selector: '#gold_user' });//.demo-container
+
+                            // stream.pipe(fs.createWriteStream(`./public/media/graph.png`));
+                            // stream.on('finish', function () {
+
+                            //     var getStatus = newstatus;
+
+                            //     var secret = require("./cyj5s"); //save before launch (auth)
+                            //     var Twitter = new TwitterPackage(secret);
+                            //     var data = require('fs').readFileSync(`./public/media/graph.png`);
+                            //     Twitter.post('media/upload', { media: data }, function (error, media, response) {
+                            //         if (!error) {
+                            //             var newstatus = {
+                            //                 status: getStatus,
+                            //                 media_ids: media.media_id_string
+                            //             }
+                            //             Twitter.post('statuses/update', newstatus, function (error, tweet, response) {
+                            //                 if (!error) {
+                            //                     console.log("done");
+                            //                 }
+                            //             });
+
+                            //         } if (error) {
+                            //             console.log(error);
+                            //         }
+                            //     });
+                            // });
+
+                            //BACKUP DATA
+                            var backUpData = {
+                                id: "album_sales", //also filename
+                                "online_sales": online_sales,
+                                "offline_sales": offline_sales,
+                                "previous_sales": 53944,
+                                "sum_sales_volume": TOTAL_SALES
+                            };
+                            console.log("let's backup data");
+                            store.add(backUpData, function (err) {
+                                // called when the file has been written
+                                // to the /path/to/storage/location/12345.json
+                                if (err) console.log(err); // err if the save failed
+                            });
                         }
 
-
-                        console.log(newstatus);
-
-                        var secret = require("./cyj5s");
-                        var Twitter = new TwitterPackage(secret);
-                        Twitter.post('statuses/update', { status: newstatus }, function (error, tweet, response) {
-                            if (error) throw error;
-                            console.log("Tweeted!!!");
-                        });
-                        //TWEET WITH IMAGE
-                        // const stream = screenshot('http://www.hanteochart.com/ranking/music/album?idx=49801290&rank_artist_type=1&term=0', '1280x1080', { crop: true, selector: '#gold_user' });//.demo-container
-
-                        // stream.pipe(fs.createWriteStream(`./public/media/graph.png`));
-                        // stream.on('finish', function () {
-
-                        //     var getStatus = newstatus;
-
-                        //     var secret = require("./cyj5s"); //save before launch (auth)
-                        //     var Twitter = new TwitterPackage(secret);
-                        //     var data = require('fs').readFileSync(`./public/media/graph.png`);
-                        //     Twitter.post('media/upload', { media: data }, function (error, media, response) {
-                        //         if (!error) {
-                        //             var newstatus = {
-                        //                 status: getStatus,
-                        //                 media_ids: media.media_id_string
-                        //             }
-                        //             Twitter.post('statuses/update', newstatus, function (error, tweet, response) {
-                        //                 if (!error) {
-                        //                     console.log("done");
-                        //                 }
-                        //             });
-
-                        //         } if (error) {
-                        //             console.log(error);
-                        //         }
-                        //     });
-                        // });
-
-                        //BACKUP DATA
-                        var backUpData = {
-                            id: "album_sales", //also filename
-                            "online_sales": online_sales,
-                            "offline_sales": offline_sales,
-                            "previous_sales": 53944,
-                            "sum_sales_volume": TOTAL_SALES
-                        };
-                        console.log("let's backup data");
-                        store.add(backUpData, function (err) {
-                            // called when the file has been written
-                            // to the /path/to/storage/location/12345.json
-                            if (err) console.log(err); // err if the save failed
-                        });
                     }
+                    );
 
                 }
-                );
-
             }
-        }
-    });
+        });
+    }
+
 }
 
 
