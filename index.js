@@ -125,7 +125,7 @@ function AlbumSales() {
             var sum_sales_volume = online_sales + offline_sales;//body.data.sum_sales_volume;
             console.log("Online sales : " + online_sales);
             console.log("Offline sales : " + offline_sales);
-            console.log("TOTAL : " + sum_sales_volume);
+            console.log("Sum sales volume : " + sum_sales_volume);
 
             store.load("album_sales", function (err, object) {
                 if (err) console.log(err);
@@ -134,8 +134,10 @@ function AlbumSales() {
                 var chkOnline_sales = object.online_sales;
                 var chkOffline_sales = object.offline_sales;
                 var chkTotal_sales = object.sum_sales_volume;
-                sum_sales_volume = sum_sales_volume + chkTotal_sales;
-                console.log("**** TOTAL SALES : " + sum_sales_volume);
+                var chkPrv_sales = object.previous_sales;
+
+                var TOTAL_SALES = sum_sales_volume + chkPrv_sales;
+                console.log("**** TOTAL SALES : " + TOTAL_SALES);
                 if (chkOnline_sales != online_sales || chkOffline_sales != offline_sales) {
                     //TWEET
                     console.log("let's tweet!");
@@ -147,7 +149,7 @@ function AlbumSales() {
                     var newstatus = `${create_time_KR} KST \n(ALBUM SALES) \n\n`;
                     var online_sales_currency = online_sales.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
                     var offline_sales_currency = offline_sales.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
-                    var sum_sales_currency = sum_sales_volume.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
+                    var sum_sales_currency = TOTAL_SALES.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
                     //Check Rise Up
                     var online_up = online_sales - chkOnline_sales;
                     var offline_up = offline_sales - chkOffline_sales;
@@ -216,7 +218,8 @@ function AlbumSales() {
                         id: "album_sales", //also filename
                         "online_sales": online_sales,
                         "offline_sales": offline_sales,
-                        "sum_sales_volume": sum_sales_volume
+                        "previous_sales" : 53944,
+                        "sum_sales_volume": TOTAL_SALES
                     };
                     console.log("let's backup data");
                     store.add(backUpData, function (err) {
