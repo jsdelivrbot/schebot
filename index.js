@@ -133,6 +133,9 @@ function AlbumSales() {
 
                 var chkOnline_sales = object.online_sales;
                 var chkOffline_sales = object.offline_sales;
+                var chkTotal_sales = object.sum_sales_volume;
+                sum_sales_volume = sum_sales_volume + chkTotal_sales;
+                console.log("**** TOTAL SALES : " + sum_sales_volume);
                 if (chkOnline_sales != online_sales || chkOffline_sales != offline_sales) {
                     //TWEET
                     console.log("let's tweet!");
@@ -173,41 +176,40 @@ function AlbumSales() {
 
                     console.log(newstatus);
 
-
-
-
-                    // Twitter.post('statuses/update', { status: newstatus }, function (error, tweet, response) {
-                    //     if (error) throw error;
-                    //     console.log("Tweeted!!!");
-                    // });
-                    //TWEET WITH IMAGE
-                    const stream = screenshot('http://www.hanteochart.com/ranking/music/album?idx=49801290&rank_artist_type=1&term=0', '1280x1080', { crop: true, selector: '#gold_user' });//.demo-container
-
-                    stream.pipe(fs.createWriteStream(`./public/media/graph.png`));
-                    stream.on('finish', function () {
-
-                        var getStatus = newstatus;
-
-                        var secret = require("./cyj5s"); //save before launch (auth)
-                        var Twitter = new TwitterPackage(secret);
-                        var data = require('fs').readFileSync(`./public/media/graph.png`);
-                        Twitter.post('media/upload', { media: data }, function (error, media, response) {
-                            if (!error) {
-                                var newstatus = {
-                                    status: getStatus,
-                                    media_ids: media.media_id_string
-                                }
-                                Twitter.post('statuses/update', newstatus, function (error, tweet, response) {
-                                    if (!error) {
-                                        console.log("done");
-                                    }
-                                });
-
-                            } if (error) {
-                                console.log(error);
-                            }
-                        });
+                    var secret = require("./cyj5s");
+                    var Twitter = new TwitterPackage(secret);
+                    Twitter.post('statuses/update', { status: newstatus }, function (error, tweet, response) {
+                        if (error) throw error;
+                        console.log("Tweeted!!!");
                     });
+                    //TWEET WITH IMAGE
+                    // const stream = screenshot('http://www.hanteochart.com/ranking/music/album?idx=49801290&rank_artist_type=1&term=0', '1280x1080', { crop: true, selector: '#gold_user' });//.demo-container
+
+                    // stream.pipe(fs.createWriteStream(`./public/media/graph.png`));
+                    // stream.on('finish', function () {
+
+                    //     var getStatus = newstatus;
+
+                    //     var secret = require("./cyj5s"); //save before launch (auth)
+                    //     var Twitter = new TwitterPackage(secret);
+                    //     var data = require('fs').readFileSync(`./public/media/graph.png`);
+                    //     Twitter.post('media/upload', { media: data }, function (error, media, response) {
+                    //         if (!error) {
+                    //             var newstatus = {
+                    //                 status: getStatus,
+                    //                 media_ids: media.media_id_string
+                    //             }
+                    //             Twitter.post('statuses/update', newstatus, function (error, tweet, response) {
+                    //                 if (!error) {
+                    //                     console.log("done");
+                    //                 }
+                    //             });
+
+                    //         } if (error) {
+                    //             console.log(error);
+                    //         }
+                    //     });
+                    // });
 
                     //BACKUP DATA
                     var backUpData = {
