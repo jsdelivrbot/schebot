@@ -181,7 +181,7 @@ function AlbumSales() {
                     //     console.log("Tweeted!!!");
                     // });
                     //TWEET WITH IMAGE
-                    const stream = screenshot('http://www.hanteochart.com/ranking/music/album?idx=49801290&rank_artist_type=1&term=0', '1280x1080', { crop: true, selector: '.demo-container' });
+                    const stream = screenshot('http://www.hanteochart.com/ranking/music/album?idx=49801290&rank_artist_type=1&term=0', '1280x1080', { crop: true, selector: '#gold_user' });//.demo-container
 
                     stream.pipe(fs.createWriteStream(`./public/media/graph.png`));
                     stream.on('finish', function () {
