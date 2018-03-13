@@ -118,7 +118,7 @@ function AlbumSales() {
     //Check Minute
     var current_time = moment().format('mm');
     console.log("current time : " + current_time);
-    if (current_time == "30" || current_time == "00") {
+    //if (current_time == "30" || current_time == "00") {
         request({
             url: `http://www.hanteochart.com/chart/onoff/body?album_idx=49801290&term=6`,
             json: true
@@ -239,7 +239,7 @@ function AlbumSales() {
                 }
             }
         });
-    }
+    //}
 
 }
 
