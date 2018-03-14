@@ -1,7 +1,7 @@
 {
   "id": "album_sales",
-  "online_sales": 9081,
-  "offline_sales": 20494,
-  "previous_sales": 53944,
-  "sum_sales_volume": 83519
+  "online_sales": 0,
+  "offline_sales": 0,
+  "previous_sales": 127192,
+  "sum_sales_volume": 127192
 }
