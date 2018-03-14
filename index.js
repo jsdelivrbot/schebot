@@ -83,7 +83,7 @@ function FirstSetting(username) {
         json: true
     }, function (error, response, body) {
         if (!error && response.statusCode === 200) {
-            var FitemLen = body.user.media.count;
+            var FitemLen = body.graphql.user.edge_owner_to_timeline_media.count;//body.user.media.count;
 
             var backUpLastMinData = {
                 id: unixLastMinFirstSett, //also filename
@@ -257,7 +257,7 @@ function DoCheckMedia(username) {
             var unixLastMin = moment(chklastMin).unix();
 
 
-            var count = body.user.media.count;
+            var count = body.graphql.user.edge_owner_to_timeline_media.count;//body.user.media.count;
 
 
             var backUpData = {
@@ -292,9 +292,9 @@ function DoCheckMedia(username) {
                     console.log("-----NEW POST------");
                     var nPost = count - getItemLen;
                     for (var i = 0; i < nPost; i++) {
-                        var nodes = body.user.media.nodes[i];
+                        var nodes = body.graphql.user.edge_owner_to_timeline_media.edges[i].node;//body.user.media.nodes[i];
                         //__typename : , GraphImage,GraphSidecar,GraphVideo?
-                        var code = nodes.code;
+                        var code = nodes.shortcode;//nodes.code;
                         CheckMediaDataType(code);
                     }
                 }
