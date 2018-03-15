@@ -120,11 +120,11 @@ function AlbumSales() {
     var current_time = moment().format('mm');
     console.log("current time : " + current_time);
     //var current_hour = moment().format('H');
-    var chkHour = moment.tz(moment(),"H", "Asia/Seoul");
+    var chkHour = moment.tz(moment(), "H", "Asia/Seoul");
     var current_hour = moment(chkHour).format("H")
 
     if (current_hour > 7 && current_hour <= 24) { // (7 - 24 Hours KST)
-        if ( current_time == "00") {//current_time == "30" ||
+        if (current_time == "00") {//current_time == "30" ||
             request({
                 url: `http://www.hanteochart.com/chart/onoff/body?album_idx=49801290&term=6`,
                 json: true
@@ -157,8 +157,8 @@ function AlbumSales() {
 
 
                                 var startDate = moment.tz("12-03-2018", "DD-MM-YYYY", "Asia/Seoul");
-                                var endDate = moment.tz(moment(),"DD-MM-YYYY", "Asia/Seoul");
-                                
+                                var endDate = moment.tz(moment(), "DD-MM-YYYY", "Asia/Seoul");
+
                                 var result = endDate.diff(startDate, 'days') + 1;
                                 console.log('result : ' + result);
 
@@ -230,19 +230,24 @@ function AlbumSales() {
                                     });
                                 });
 
-                                //BACKUP DATA
-                                var backUpData = {
-                                    id: "album_sales", //also filename
-                                    "online_sales": online_sales,
-                                    "offline_sales": offline_sales,
-                                    "previous_sales": 148653,// 127192,////53944,73248
-                                    "sum_sales_volume": TOTAL_SALES
-                                };
-                                console.log("let's backup data");
-                                store.add(backUpData, function (err) {
-                                    // called when the file has been written
-                                    // to the /path/to/storage/location/12345.json
-                                    if (err) console.log(err); // err if the save failed
+                                //Check History Sales
+                                store.load("history_sales", function (err, object) {
+                                    if (err) console.log(err);
+                                    var prev_sales = object.previous_sales;
+                                    console.log("Previous Sale: " + prev_sales);
+
+                                    //BACKUP DATA
+                                    var backUpData = {
+                                        id: "album_sales", //also filename
+                                        "online_sales": online_sales,
+                                        "offline_sales": offline_sales,
+                                        "previous_sales": prev_sales,// 148653,127192,////53944,73248
+                                        "sum_sales_volume": TOTAL_SALES
+                                    };
+                                    console.log("let's backup data");
+                                    store.add(backUpData, function (err) {
+                                        if (err) console.log(err); // err if the save failed
+                                    });
                                 });
                             }
 
@@ -252,14 +257,28 @@ function AlbumSales() {
                     }
                 }
             });
-        
-        
-        
-        
+
+
+
+
         }
     }
-    if(current_hour == 1){ //1AM
-        
+    if (current_hour == 1) { //1AM
+        store.load("album_sales", function (err, object) {
+            if (err) console.log(err);
+            var sum_album_sales = object.sum_sales_volume;
+            //Save to history สำหรับขึ้นวันใหม่
+
+            //BACKUP DATA
+            var backUpData = {
+                id: "history_sales", //also filename
+                "previous_sales": sum_album_sales
+            };
+            console.log("---Save To History Data---");
+            store.add(backUpData, function (err) {
+                if (err) console.log(err); // err if the save failed
+            });
+        });
 
     }
 
