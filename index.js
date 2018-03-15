@@ -222,7 +222,7 @@ function AlbumSales() {
                                 id: "album_sales", //also filename
                                 "online_sales": online_sales,
                                 "offline_sales": offline_sales,
-                                "previous_sales": 127192,////53944
+                                "previous_sales": 148653,// 127192,////53944,73248
                                 "sum_sales_volume": TOTAL_SALES
                             };
                             console.log("let's backup data");
