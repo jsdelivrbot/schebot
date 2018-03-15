@@ -120,8 +120,8 @@ function AlbumSales() {
     var current_time = moment().format('mm');
     console.log("current time : " + current_time);
     //var current_hour = moment().format('H');
-    var chkHour = moment.tz(moment(),"HH", "Asia/Seoul");
-    var current_hour = moment(chkHour).format("HH")
+    var chkHour = moment.tz(moment(),"H", "Asia/Seoul");
+    var current_hour = moment(chkHour).format("H")
 
     if (current_hour > 7 && current_hour <= 24) { // Thai Time (7 - 24 Hours KST)
         if (current_time == "30" || current_time == "00") {
