@@ -202,7 +202,7 @@ function AlbumSales() {
                                 // });
 
                                 //TWEET WITH IMAGE
-                                const stream = screenshot('http://www.hanteochart.com/ranking/music/album?idx=49801290&rank_artist_type=1&term=0', '1280x1080', { crop: true, selector: '.demo-container' });//#gold_user
+                                var stream = screenshot('http://www.hanteochart.com/ranking/music/album?idx=49801290&rank_artist_type=1&term=0', '1280x1080', { crop: true,delay:5, selector: '.demo-container' });//#gold_user
 
                                 stream.pipe(fs.createWriteStream(`./public/media/graph.png`));
                                 stream.on('finish', function () {
