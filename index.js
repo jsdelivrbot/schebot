@@ -123,8 +123,8 @@ function AlbumSales() {
     var chkHour = moment.tz(moment(),"H", "Asia/Seoul");
     var current_hour = moment(chkHour).format("H")
 
-    if (current_hour > 7 && current_hour <= 24) { // Thai Time (7 - 24 Hours KST)
-        if (current_time == "30" || current_time == "00") {
+    if (current_hour > 7 && current_hour <= 24) { // (7 - 24 Hours KST)
+        if ( current_time == "00") {//current_time == "30" ||
             request({
                 url: `http://www.hanteochart.com/chart/onoff/body?album_idx=49801290&term=6`,
                 json: true
@@ -143,7 +143,7 @@ function AlbumSales() {
 
                             var chkOnline_sales = object.online_sales;
                             var chkOffline_sales = object.offline_sales;
-                            var chkTotal_sales = object.sum_sales_volume;
+                            //var chkTotal_sales = object.sum_sales_volume;
                             var chkPrv_sales = object.previous_sales;
 
                             var TOTAL_SALES = sum_sales_volume + chkPrv_sales;
@@ -162,7 +162,7 @@ function AlbumSales() {
                                 var result = endDate.diff(startDate, 'days') + 1;
                                 console.log('result : ' + result);
 
-                                var newstatus = `Day-${result} ${create_time_KR} KST \n\nHanteo Real-Time Album Sales\n`;
+                                var newstatus = `Hanteo Chart Album Sales\nDay-${result} ${create_time_KR} KST \n\n🐥🐥🐥💚\n`;
                                 var online_sales_currency = online_sales.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
                                 var offline_sales_currency = offline_sales.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
                                 var sum_sales_currency = TOTAL_SALES.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
@@ -173,22 +173,22 @@ function AlbumSales() {
                                 var offline_up_currency = offline_up.toString().replace(/(\d)(?=(\d\d\d)+(?!\d))/g, "$1,");
 
                                 if (offline_up == 0 && online_up > 0) {
-                                    newstatus += `ONLINE SALES : ${online_sales_currency}  (+${online_up_currency})`;
-                                    newstatus += `\nOFFLINE SALES : ${offline_sales_currency}`;
-                                    newstatus += `\nTOTAL : ${sum_sales_currency}`;
-                                    newstatus += `\n\n#LOOK #GOT7 #갓세븐 #LOOKGOT7 #EYESONYOU`;
+                                    newstatus += `Online Sales : ${online_sales_currency}  (🔺${online_up_currency})`;
+                                    newstatus += `\nOffline Sales : ${offline_sales_currency}`;
+                                    newstatus += `\n🚩TOTAL : ${sum_sales_currency}`;
+                                    newstatus += `\n\n#LOOK #LOOKGOT7\n#GOT7 #갓세븐\n#EYESONYOU`;
 
 
                                 } if (online_up == 0 && offline_up > 0) {
-                                    newstatus += `ONLINE SALES : ${online_sales_currency}  `;
-                                    newstatus += `\nOFFLINE SALES : ${offline_sales_currency} (+${offline_up_currency})`;
-                                    newstatus += `\nTOTAL : ${sum_sales_currency}`;
-                                    newstatus += `\n\n#LOOK #GOT7 #갓세븐 #LOOKGOT7 #EYESONYOU`;
+                                    newstatus += `Online Sales : ${online_sales_currency}  `;
+                                    newstatus += `\nOffline Sales : ${offline_sales_currency} (🔺${offline_up_currency})`;
+                                    newstatus += `\n🚩TOTAL : ${sum_sales_currency}`;
+                                    newstatus += `\n\n#LOOK #LOOKGOT7\n#GOT7 #갓세븐\n#EYESONYOU`;
                                 } if (online_up > 0 && offline_up > 0) {
-                                    newstatus += `ONLINE SALES : ${online_sales_currency}  (+${online_up_currency})`;
-                                    newstatus += `\nOFFLINE SALES : ${offline_sales_currency} (+${offline_up_currency})`;
-                                    newstatus += `\nTOTAL : ${sum_sales_currency}`;
-                                    newstatus += `\n\n#LOOK #GOT7 #갓세븐 #LOOKGOT7 #EYESONYOU`;
+                                    newstatus += `Online Sales : ${online_sales_currency}  (🔺${online_up_currency})`;
+                                    newstatus += `\nOffline Sales : ${offline_sales_currency} (🔺${offline_up_currency})`;
+                                    newstatus += `\n🚩TOTAL : ${sum_sales_currency}`;
+                                    newstatus += `\n\n#LOOK #LOOKGOT7\n#GOT7 #갓세븐\n#EYESONYOU`;
                                 }
 
 
@@ -202,7 +202,7 @@ function AlbumSales() {
                                 // });
 
                                 //TWEET WITH IMAGE
-                                const stream = screenshot('http://www.hanteochart.com/ranking/music/album?idx=49801290&rank_artist_type=1&term=0', '1280x1080', { crop: true, selector: '#gold_user' });//.demo-container
+                                const stream = screenshot('http://www.hanteochart.com/ranking/music/album?idx=49801290&rank_artist_type=1&term=0', '1280x1080', { crop: true, selector: '.demo-container' });//#gold_user
 
                                 stream.pipe(fs.createWriteStream(`./public/media/graph.png`));
                                 stream.on('finish', function () {
@@ -252,10 +252,14 @@ function AlbumSales() {
                     }
                 }
             });
+        
+        
+        
+        
         }
     }
-    if(current_hour == 0){ // 2AM
-
+    if(current_hour == 1){ //1AM
+        
 
     }
 
