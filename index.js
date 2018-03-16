@@ -123,7 +123,7 @@ function AlbumSales() {
     var chkHour = moment.tz(moment(), "H", "Asia/Seoul");
     var current_hour = moment(chkHour).format("H")
 
-    if ( 24>= current_hour > 7 || current_hour == 0) { // (7 - 24 Hours KST)
+    if ((24 >= current_hour && current_hour > 7 )|| current_hour == 0) { // (7 - 24 Hours KST)
         if (current_time == "00") {//current_time == "30" ||
             request({
                 url: `http://www.hanteochart.com/chart/onoff/body?album_idx=49801290&term=6`,
@@ -292,7 +292,7 @@ function AlbumSales() {
               store.add(AlbumSalesData, function (err) {
                 if (err) console.log(err); // err if the save failed
             });
-            
+
         });
 
     }
