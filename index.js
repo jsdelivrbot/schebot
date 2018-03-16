@@ -278,6 +278,21 @@ function AlbumSales() {
             store.add(backUpData, function (err) {
                 if (err) console.log(err); // err if the save failed
             });
+
+
+            //Set Default Album Sales
+            var AlbumSalesData = {
+                "id": "album_sales",
+                "online_sales": 0,
+                "offline_sales": 0,
+                "previous_sales": sum_album_sales,
+                "sum_sales_volume": sum_album_sales
+              }
+              console.log("--Set Default Album Sales Data");
+              store.add(AlbumSalesData, function (err) {
+                if (err) console.log(err); // err if the save failed
+            });
+            
         });
 
     }
