@@ -107,7 +107,7 @@ function fetchJson() {
     //CheckMedia if file change
     console.log("-------------[START CHECK MEDIA]-----------");
     var username = "333cyj333";
-    AlbumSales();
+    //AlbumSales();
     DoCheckMedia(username);
 
     setTimeout(fetchJson, 60000); // Fetch it again in a 60 second
