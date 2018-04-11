@@ -391,7 +391,12 @@ function DoCheckMedia(username) {
                         if (time_taken_forchk == chklastMin) {
 
                             //CAPTION
-                            var caption0 = "[YOUNGJAE_STORY] " + item.caption.text;
+                            var chkcaption = item.caption;
+                            var textcaption = "";
+                            if(chkcaption != null){
+                                textcaption = item.caption.text;
+                            }
+                            var caption0 = "[YOUNGJAE_STORY] " + textcaption;
                             var caption1 = "\n#영재 #GOT7\n";
                             var caption = caption0 + caption1 + story_url + "\n" + time_taken;
                             console.log(caption);
