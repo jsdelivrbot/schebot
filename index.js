@@ -372,14 +372,14 @@ function DoCheckMedia(username) {
                 if (!error && response.statusCode === 200) {
                     var storyid = body.id;
                     //console.log(storyid);
-                    var item = body.items[0];
-                    var code = item.code;
-                    var story_url = "https://www.instagram.com/p/" + code;
+                   
+                    //var story_url = "https://www.instagram.com/p/" + code;
                     //console.log("STORY URL : " + story_url);
                     var story_count = body.items.length;
                     //console.log("story have : " + story_count);
                     if (story_count > 0) {
-
+                        var item = body.items[0];
+                        //var code = item.code;
                         //DateTime Taken
                         var taken_at = item.taken_at;
                         var taken_at_mm = moment.unix(taken_at);
@@ -398,7 +398,7 @@ function DoCheckMedia(username) {
                             }
                             var caption0 = "[YOUNGJAE_STORY] " + textcaption;
                             var caption1 = "\n#영재 #GOT7\n";
-                            var caption = caption0 + caption1 + story_url + "\n" + time_taken;
+                            var caption = caption0 + caption1 + time_taken;
                             console.log(caption);
                             //Media Type
                             var media_type = item.media_type;
@@ -426,7 +426,7 @@ function DoCheckMedia(username) {
 
                             }
 
-                            if (media_type == 2) {
+                            if (media_type == 2) { //Video
                                 var video_url = item.video_versions[0].url;
                                 console.log("VIDEO URL : " + video_url);
 
