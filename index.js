@@ -372,7 +372,6 @@ function DoCheckMedia(username) {
                 if (!error && response.statusCode === 200) {
                     var storyid = body.id;
                     //console.log(storyid);
-                   
                     //var story_url = "https://www.instagram.com/p/" + code;
                     //console.log("STORY URL : " + story_url);
                     var story_count = body.items.length;
