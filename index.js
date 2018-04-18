@@ -81,10 +81,15 @@ function FirstSetting(username) {
     var lastMinFirstSett = moment().subtract(1, 'minute').format('YYYY-MM-DD HH:mm:00');
     var unixLastMinFirstSett = moment(lastMinFirstSett).unix();
     request({
-        url: `https://www.instagram.com/${username}/?__a=1`,
-        json: true
+        url: `https://www.instagram.com/${username}/`//?__a=1
+        //json: true
     }, function (error, response, body) {
         if (!error && response.statusCode === 200) {
+
+            var shareData = body.substring(body.lastIndexOf("window._sharedData = ") + 21, body.lastIndexOf('show_app_install') + 23);
+            var jsonData = JSON.parse(shareData)
+            var body = jsonData.entry_data.ProfilePage["0"];
+            
             var FitemLen = body.graphql.user.edge_owner_to_timeline_media.count;//body.user.media.count;
 
             var backUpLastMinData = {
@@ -324,9 +329,9 @@ function DoCheckMedia(username) {
             var unixLastMin = moment(chklastMin).unix();
 
             //NEW SCARP
-            var shareData =body.substring(body.lastIndexOf("window._sharedData = ")+21,body.lastIndexOf('show_app_install')+23);
+            var shareData = body.substring(body.lastIndexOf("window._sharedData = ") + 21, body.lastIndexOf('show_app_install') + 23);
             var jsonData = JSON.parse(shareData)
-            var body = jsonData.entry_data.ProfilePage["0"];    
+            var body = jsonData.entry_data.ProfilePage["0"];
 
 
             var count = body.graphql.user.edge_owner_to_timeline_media.count;//body.user.media.count;
