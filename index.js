@@ -15,7 +15,6 @@ const socketIO = require('socket.io');
 var screenshot = require('screenshot-stream');
 var store = require('json-fs-store')('./public/media/');
 var Twitter = require('twitter');
-const cheerio = require('cheerio');
 
 app.set('port', (process.env.PORT || 5000));
 // app.use(express.bodyParser());
@@ -89,7 +88,7 @@ function FirstSetting(username) {
             var shareData = body.substring(body.lastIndexOf("window._sharedData = ") + 21, body.lastIndexOf('show_app_install') + 23);
             var jsonData = JSON.parse(shareData)
             var body = jsonData.entry_data.ProfilePage["0"];
-            
+
             var FitemLen = body.graphql.user.edge_owner_to_timeline_media.count;//body.user.media.count;
 
             var backUpLastMinData = {
