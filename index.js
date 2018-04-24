@@ -16,6 +16,15 @@ var screenshot = require('screenshot-stream');
 var store = require('json-fs-store')('./public/media/');
 var Twitter = require('twitter');
 
+//GET STORY
+const {
+    getStories,
+    getStoriesFeed,
+    getMediaByCode,
+    getUserByUsername
+} = require('instagram-stories')
+
+
 app.set('port', (process.env.PORT || 5000));
 // app.use(express.bodyParser());
 app.use(express.static(__dirname + '/public'));
@@ -382,95 +391,96 @@ function DoCheckMedia(username) {
             });
 
 
+            //SESSION ID
+            var session_id = "IGSC477a4db653a8aa190755c21f3a9b79354829e639893a0e8616e8896dc82cc35e%3AZLTkdjiyZs46NGt4ecDskm2obFrZFFCt%3A%7B%22_auth_user_id%22%3A55502361%2C%22_auth_user_backend%22%3A%22accounts.backends.CaseInsensitiveModelBackend%22%2C%22_auth_user_hash%22%3A%22%22%2C%22_platform%22%3A4%2C%22_token_ver%22%3A2%2C%22_token%22%3A%2255502361%3A1VkcHjcNMfYpOJzuxH538jjpztZzRpKJ%3A35bb8bca913d21bbf6e1977e18e2aa06b5ddcf3e40429aac7e490618028464db%22%2C%22last_refreshed%22%3A1524452065.9287192822%7D";
+            //expired : 2018-07-22T02:57:03.619Z
+            var cyjid = 1946899430;
+            var somzid = 55502361;
 
             //IG STORY CHECK 
             console.log("---------STOP IG STORY CHECK------------");
-            request({
-                url: `https://api.storiesig.com/stories/${username}`,
-                json: true
-            }, function (error, response, body) {
-                if (!error && response.statusCode === 200) {
-                    var storyid = body.id;
-                    //console.log(storyid);
-                    //var story_url = "https://www.instagram.com/p/" + code;
-                    //console.log("STORY URL : " + story_url);
-                    var story_count = body.items.length;
-                    //console.log("story have : " + story_count);
-                    if (story_count > 0) {
-                        var item = body.items[0];
-                        //var code = item.code;
-                        //DateTime Taken
-                        var taken_at = item.taken_at;
-                        var taken_at_mm = moment.unix(taken_at);
-                        var time_taken = momentTz.tz(taken_at_mm, "Asia/Seoul").format('MMM DD YYYY, HH:mm');
-                        console.log("Taken At : " + time_taken);
-                        var time_taken_forchk = moment(taken_at_mm).format('YYYY-MM-DD HH:mm:00');
+            getStories({ id: cyjid, userid: somzid, sessionid: session_id }).then(stories => {
+                var body = stories;
+                var storyid = body.id;
+                //console.log(storyid);
+                //var story_url = "https://www.instagram.com/p/" + code;
+                //console.log("STORY URL : " + story_url);
+                var story_count = body.items.length;
+                //console.log("story have : " + story_count);
+                if (story_count > 0) {
+                    var item = body.items[0];
+                    //var code = item.code;
+                    //DateTime Taken
+                    var taken_at = item.taken_at;
+                    var taken_at_mm = moment.unix(taken_at);
+                    var time_taken = momentTz.tz(taken_at_mm, "Asia/Seoul").format('MMM DD YYYY, HH:mm');
+                    console.log("Taken At : " + time_taken);
+                    var time_taken_forchk = moment(taken_at_mm).format('YYYY-MM-DD HH:mm:00');
 
 
-                        if (time_taken_forchk == chklastMin) {
+                    if (time_taken_forchk == chklastMin) {
 
-                            //CAPTION
-                            var chkcaption = item.caption;
-                            var textcaption = "";
-                            if (chkcaption != null) {
-                                textcaption = item.caption.text;
-                            }
-                            var caption0 = "[YOUNGJAE_STORY] " + textcaption;
-                            var caption1 = "\n#영재 #GOT7\n";
-                            var caption = caption0 + caption1 + time_taken;
-                            console.log(caption);
-                            //Media Type
-                            var media_type = item.media_type;
-                            if (media_type == 1) { //Picture
-                                var original_width = item.original_width;
-                                var original_height = item.original_height;
-                                var img_ver2 = item.image_versions2;
-                                var candidates_length = item.image_versions2.candidates.length;
-                                console.log(candidates_length);
-                                for (var i = 0; i < candidates_length; i++) {
-                                    if (img_ver2.candidates[i].width == original_width && img_ver2.candidates[i].height == original_height) { // Maxinum,Original Image
-                                        console.log("found " + original_width, original_height);
-                                        var img_url = img_ver2.candidates[i].url;
-                                        console.log("Image URL : " + img_url);
-                                        var stream = request(img_url).pipe(fs.createWriteStream(`./public/media/${storyid}.jpg`));
-                                        stream.on('finish', function () {
-                                            console.log('---stream done---')
-                                            //POST TWITTER
-                                            console.log("start tweet image");
-                                            TweetImage(storyid, caption);
-                                        });
-                                    }
-                                }
-
-
-                            }
-
-                            if (media_type == 2) { //Video
-                                var video_url = item.video_versions[0].url;
-                                console.log("VIDEO URL : " + video_url);
-
-                                var stream = request(video_url).pipe(fs.createWriteStream(`./public/media/${storyid}.mp4`));
-                                stream.on('finish', function () {
-                                    console.log('---stream video done---')
-
-                                    var videoTweet = new VideoTweet({
-                                        file_path: `./public/media/${storyid}.mp4`,
-                                        tweet_text: caption
+                        //CAPTION
+                        var chkcaption = item.caption;
+                        var textcaption = "";
+                        if (chkcaption != null) {
+                            textcaption = item.caption.text;
+                        }
+                        var caption0 = "[YOUNGJAE_STORY] " + textcaption;
+                        var caption1 = "\n#영재 #GOT7\n";
+                        var caption = caption0 + caption1 + time_taken;
+                        console.log(caption);
+                        //Media Type
+                        var media_type = item.media_type;
+                        if (media_type == 1) { //Picture
+                            var original_width = item.original_width;
+                            var original_height = item.original_height;
+                            var img_ver2 = item.image_versions2;
+                            var candidates_length = item.image_versions2.candidates.length;
+                            console.log(candidates_length);
+                            for (var i = 0; i < candidates_length; i++) {
+                                if (img_ver2.candidates[i].width == original_width && img_ver2.candidates[i].height == original_height) { // Maxinum,Original Image
+                                    console.log("found " + original_width, original_height);
+                                    var img_url = img_ver2.candidates[i].url;
+                                    console.log("Image URL : " + img_url);
+                                    var stream = request(img_url).pipe(fs.createWriteStream(`./public/media/${storyid}.jpg`));
+                                    stream.on('finish', function () {
+                                        console.log('---stream done---')
+                                        //POST TWITTER
+                                        console.log("start tweet image");
+                                        TweetImage(storyid, caption);
                                     });
-                                });
-
-
+                                }
                             }
+
 
                         }
 
+                        if (media_type == 2) { //Video
+                            var video_url = item.video_versions[0].url;
+                            console.log("VIDEO URL : " + video_url);
+
+                            var stream = request(video_url).pipe(fs.createWriteStream(`./public/media/${storyid}.mp4`));
+                            stream.on('finish', function () {
+                                console.log('---stream video done---')
+
+                                var videoTweet = new VideoTweet({
+                                    file_path: `./public/media/${storyid}.mp4`,
+                                    tweet_text: caption
+                                });
+                            });
 
 
-
+                        }
 
                     }
+
+
+
+
+
                 }
-            });
+            })
 
         }
     });

@@ -29,6 +29,7 @@
     "instagram-node-api": "^1.6.0",
     "instagram-node-lib": "^0.1.1",
     "instagram-private-api": "^0.6.7",
+    "instagram-stories": "^1.0.1",
     "instagram-web-api": "^2.0.0",
     "json-fs-store": "^1.0.1",
     "jssoup": "0.0.6",
@@ -36,6 +37,7 @@
     "moment-timezone": "^0.5.13",
     "mongodb": "^3.0.4",
     "nconf": "^0.8.4",
+    "node-instagram": "^4.1.0",
     "node-watch": "^0.5.5",
     "path": "^0.12.7",
     "pubnub": "^4.12.0",
@@ -44,6 +46,7 @@
     "screenshot-stream": "^4.2.0",
     "socket.io": "^2.0.3",
     "stream": "0.0.2",
+    "tough-cookie": "^2.3.4",
     "twit": "^2.2.9",
     "twitter": "^1.7.1",
     "util": "^0.10.3"
