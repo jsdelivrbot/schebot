@@ -65,10 +65,8 @@ app.post('/getJson/:username/:num', function (req, res) {
             var shareData = body.substring(body.lastIndexOf("window._sharedData = ") + 21, body.lastIndexOf('show_app_install') + 23);
             var jsonData = JSON.parse(shareData)
             var body = jsonData.entry_data.ProfilePage["0"];
-            var nodes = body.user.media.nodes[num];
-            //__typename : , GraphImage,GraphSidecar,GraphVideo?
-            var code = nodes.code;
-            CheckMediaDataType(code);
+            var shortcode = body.graphql.user.edge_owner_to_timeline_media.edges[num].node.shortcode;
+            CheckMediaDataType(shortcode);
         }
     });
     res.sendStatus(200);
