@@ -51,8 +51,6 @@ server.listen(app.get('port'), function () {
 
 //PREVENT BEFORE POST
 app.post('/getJson/:username/:num', function (req, res) {
-
-    // var jobname = req.params.jobname;
     var num = req.params.num;
     var username = req.params.username;
     //var url = `https://www.instagram.com/${username}/media/`;
