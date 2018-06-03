@@ -51,8 +51,6 @@ server.listen(app.get('port'), function () {
 
 //PREVENT BEFORE POST
 app.post('/getJson/:username/:num', function (req, res) {
-
-    // var jobname = req.params.jobname;
     var num = req.params.num;
     var username = req.params.username;
     //var url = `https://www.instagram.com/${username}/media/`;
@@ -917,7 +915,7 @@ function CarouselImageTweet(allData, allDataLength, code, total_msg_tweet, callb
 //FUNCTION TWEETDEL
 function TweetDel(status) {
     //Screenshot
-    const stream = screenshot('https://www.instagram.com/333cyj333/', '1080x720');
+    const stream = screenshot('https://www.instagram.com/333cyj333/', '1080x720', { delay: 10 });
     stream.pipe(fs.createWriteStream(`./public/media/choidel.png`));
     stream.on('finish', function () {
 
