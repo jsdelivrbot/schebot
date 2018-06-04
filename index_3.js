@@ -73,19 +73,64 @@ app.post('/getJson/:username/:num', function (req, res) {
 });
 
 
+app.post('/getJsonByPost/:username/:code', (req, res) => {
+    var username = req.params.username;
+    var code = req.params.code;
+    CheckMediaDataType(code, username);
+    res.sendStatus(200);
+});
+
 
 
 
 
 //Adding for reslove bugging on heroku
+//333CYJ333
 var getname = config.cyjname;
-var username = config[`${getname}`][0].name;
-var title = config[`${getname}`][0].title;
-FirstSetting(username);
+var getname_cyj = config[`${getname}`][0].account;
+FirstSetting(getname_cyj);
+
+//PRDSDEF
+var getname2 = config.defname;
+console.log(getname2);
+var getname2_def = config[`${getname2}`][0].account;
+//var title = config[`${getname}`][0].title;
+FirstSetting_Def(getname2_def);
 
 
 
+function FirstSetting_Def(username) {
+    //First SETTING
+    var lastMinFirstSett = moment().subtract(1, 'minute').format('YYYY-MM-DD HH:mm:00');
+    var unixLastMinFirstSett = moment(lastMinFirstSett).unix();
+    request({
+        url: `https://www.instagram.com/${username}/`//?__a=1
+        //json: true
+    }, function (error, response, body) {
+        if (!error && response.statusCode === 200) {
 
+            var shareData = body.substring(body.lastIndexOf("window._sharedData = ") + 21, body.lastIndexOf('show_app_install') + 23);
+            var jsonData = JSON.parse(shareData)
+            var body = jsonData.entry_data.ProfilePage["0"];
+
+            var FitemLen = body.graphql.user.edge_owner_to_timeline_media.count;//body.user.media.count;
+
+            var backUpLastMinData = {
+                id: username + '-' + unixLastMinFirstSett, //also filename
+                "name": "item",
+                "itemLen": FitemLen
+            };
+
+            store.add(backUpLastMinData, function (err) {
+                console.log("--------------[DEF_First Setting Success]-------------");
+
+                fetchJson_Def(); // Start fetching to our JSON cache
+                if (err) throw err; // err if the save failed
+            });
+
+        }
+    });
+}
 
 function FirstSetting(username) {
     //First SETTING
@@ -104,14 +149,15 @@ function FirstSetting(username) {
             var FitemLen = body.graphql.user.edge_owner_to_timeline_media.count;//body.user.media.count;
 
             var backUpLastMinData = {
-                id: unixLastMinFirstSett, //also filename
+                id: username + '-' + unixLastMinFirstSett, //also filename
                 "name": "item",
                 "itemLen": FitemLen
             };
 
             store.add(backUpLastMinData, function (err) {
-                console.log("--------------[First Setting Success]-------------");
-                fetchJson(username); // Start fetching to our JSON cache
+                console.log("--------------[CYJ_First Setting Success]-------------");
+
+                fetchJson(); // Start fetching to our JSON cache
                 if (err) throw err; // err if the save failed
             });
 
@@ -120,15 +166,23 @@ function FirstSetting(username) {
 }
 
 
-function fetchJson(username) {
+function fetchJson() {
     //CheckMedia if file change
-    console.log("-------------[START CHECK MEDIA]-----------");
+    console.log("-------------[CYJ_START CHECK MEDIA]-----------");
     //AlbumSales();
-    DoCheckMedia(username);
-
+    DoCheckMedia(getname_cyj);
     setTimeout(fetchJson, 60000); // Fetch it again in a 60 second
-
 }
+
+function fetchJson_Def() {
+    //CheckMedia if file change
+    console.log("-------------[DEF_START CHECK MEDIA]-----------");
+    //AlbumSales();
+    DoCheckMedia(getname2_def);
+    setTimeout(fetchJson_Def, 60000); // Fetch it again in a 60 second
+}
+
+
 
 function AlbumSales() {
 
@@ -317,7 +371,7 @@ function AlbumSales() {
 
 
 function DoCheckMedia(username) {
-
+    console.log(username);
 
     // req("https://www.instagram.com/333cyj333/", function (err, body) {
     //     var shareData = body.substring(body.lastIndexOf("window._sharedData = ") + 21, body.lastIndexOf('show_app_install') + 23);
@@ -348,7 +402,7 @@ function DoCheckMedia(username) {
             var follower = body.graphql.user.edge_followed_by.count;
 
             var backUpData = {
-                id: unixCurrenttime, //also filename
+                id: username + '-' + unixCurrenttime, //also filename
                 "name": "item",
                 "itemLen": count
             };
@@ -359,7 +413,7 @@ function DoCheckMedia(username) {
                 if (err) console.log(err); // err if the save failed
             });
 
-            store.load(unixLastMin, function (err, object) {
+            store.load(username + '-' + unixLastMin, function (err, object) {
                 if (err) console.log(err);
 
                 //console.log("loadded : " + unixLastMin);
@@ -387,7 +441,7 @@ function DoCheckMedia(username) {
                     }
                 }
                 //finish check
-                store.remove(unixLastMin, function (err) {
+                store.remove(username + '-' + unixLastMin, function (err) {
                     //console.log("remove : " + chklastMin);
                     if (err) console.log(err); // err if the file removal failed
                 });
@@ -397,12 +451,17 @@ function DoCheckMedia(username) {
             //SESSION ID
             var session_id = config.session_id;
             //expired : 2018-07-22T02:57:03.619Z
-            var cyjid = config.cyjid;
+            //var cyjid = config.cyjid;
+            var owner_id = config[`${username}`][0].id;
             var somzid = config.somzid;
 
             //IG STORY CHECK 
             console.log("---------STOP IG STORY CHECK------------");
-            getStories({ id: cyjid, userid: somzid, sessionid: session_id }).then(stories => {
+            getStories({
+                id: owner_id,
+                userid: somzid,
+                sessionid: session_id
+            }).then(stories => {
                 var body = stories;
                 var storyid = body.id;
                 //console.log(storyid);
@@ -459,7 +518,7 @@ function DoCheckMedia(username) {
                                             console.log('---stream done---')
                                             //POST TWITTER
                                             console.log("start tweet image");
-                                            TweetImage(storyid, caption);
+                                            TweetImage(storyid, caption, username);
                                         });
                                     }
                                 }
@@ -477,7 +536,8 @@ function DoCheckMedia(username) {
 
                                     var videoTweet = new VideoTweet({
                                         file_path: `./public/media/${storyid}.mp4`,
-                                        tweet_text: caption
+                                        tweet_text: caption,
+                                        username, username
                                     });
                                 });
 
@@ -583,7 +643,7 @@ function CheckMediaDataType(code, username) {
                 console.log('---stream done---')
                 //POST TWITTER
                 console.log("start tweet image");
-                TweetImage(code, total_msg_tweet);
+                TweetImage(code, total_msg_tweet, username);
             });
         }
 
@@ -597,7 +657,8 @@ function CheckMediaDataType(code, username) {
 
                 var videoTweet = new VideoTweet({
                     file_path: `./public/media/${code}.mp4`,
-                    tweet_text: total_msg_tweet
+                    tweet_text: total_msg_tweet,
+                    username: username
                 });
             });
         }
@@ -661,7 +722,8 @@ function CheckMediaDataType(code, username) {
                             var total_msg_tweet = fistfixedTxt + igcaption + `(${idvid}/${itemLen})` + hashtagLink + timestmp;
                             var videoTweet = new VideoTweet({
                                 file_path: `./public/media/${code}_${numVid}.mp4`,
-                                tweet_text: total_msg_tweet
+                                tweet_text: total_msg_tweet,
+                                username, username
                             });
                         }
                         if (carouselURL_image.length > 0 && carouselURL_image.length < 5) {
@@ -679,7 +741,8 @@ function CheckMediaDataType(code, username) {
                             var total_msg_tweet = fistfixedTxt + igcaption + `(${idvid}/${itemLen})` + hashtagLink + timestmp;
                             var videoTweet = new VideoTweet({
                                 file_path: `./public/media/${code}_${numVid}.mp4`,
-                                tweet_text: total_msg_tweet
+                                tweet_text: total_msg_tweet,
+                                username: username
                             });
                         }
                         if (carouselURL_image.length >= 9) {
@@ -688,7 +751,8 @@ function CheckMediaDataType(code, username) {
                             var total_msg_tweet = fistfixedTxt + igcaption + `(${idvid}/${itemLen})` + hashtagLink + timestmp;
                             var videoTweet = new VideoTweet({
                                 file_path: `./public/media/${code}_${numVid}.mp4`,
-                                tweet_text: total_msg_tweet
+                                tweet_text: total_msg_tweet,
+                                username: username
                             });
                         }
 
@@ -706,7 +770,7 @@ function CheckMediaDataType(code, username) {
                 }
 
 
-                var chkTweet = CarouselImageTweet(carouselURL_image, carouselURL_image.length, code, total_msg_tweet, function (callback) {
+                var chkTweet = CarouselImageTweet(carouselURL_image, carouselURL_image.length, code, total_msg_tweet, username, function (callback) {
                     console.log(callback);
                 });
             }
@@ -735,13 +799,13 @@ function CheckMediaDataType(code, username) {
                     var idImg = carouselURL_video.length + 1;
                     var total_msg_tweet = fistfixedTxt + igcaption + `(${idImg}/${itemLen})` + hashtagLink + timestmp;
 
-                    var chkTweet = CarouselImageTweet(newAllData, newAlldataLength, code, total_msg_tweet, function (callback) {
+                    var chkTweet = CarouselImageTweet(newAllData, newAlldataLength, code, total_msg_tweet, username, function (callback) {
                         console.log(callback);
                         if (callback == "done") {
                             var itemLen = carouselURL_video.length + 2;
                             var idImg = carouselURL_video.length + 2;
                             var total_msg_tweet = fistfixedTxt + igcaption + `(${idImg}/${itemLen})` + hashtagLink + timestmp;
-                            CarouselImageTweet(newAllData2, newAlldataLength2, code, total_msg_tweet, function (callback) {
+                            CarouselImageTweet(newAllData2, newAlldataLength2, code, total_msg_tweet, username, function (callback) {
                                 console.log(callback);
                             });
                         }
@@ -773,13 +837,13 @@ function CheckMediaDataType(code, username) {
                     var idImg = carouselURL_video.length + 1;
                     var total_msg_tweet = fistfixedTxt + igcaption + `(${idImg}/${itemLen})` + hashtagLink + timestmp;
 
-                    var chkTweet = CarouselImageTweet(newAllData, newAlldataLength, code, total_msg_tweet, function (callback) {
+                    var chkTweet = CarouselImageTweet(newAllData, newAlldataLength, code, total_msg_tweet, username, function (callback) {
                         console.log(callback);
                         if (callback == "done") {
                             var itemLen = carouselURL_video.length + 2;
                             var idImg = carouselURL_video.length + 2;
                             var total_msg_tweet = fistfixedTxt + igcaption + `(${idImg}/${itemLen})` + hashtagLink + timestmp;
-                            var chkTweet2 = CarouselImageTweet(newAllData2, newAlldataLength2, code, total_msg_tweet, function (callback) {
+                            var chkTweet2 = CarouselImageTweet(newAllData2, newAlldataLength2, code, total_msg_tweet, username, function (callback) {
                                 console.log(callback);
                             });
                         }
@@ -814,20 +878,20 @@ function CheckMediaDataType(code, username) {
                     var idImg = carouselURL_video.length + 1;
                     var total_msg_tweet = fistfixedTxt + igcaption + `(${idImg}/${itemLen})` + hashtagLink + timestmp;
 
-                    var chkTweet = CarouselImageTweet(newAllData, newAlldataLength, code, total_msg_tweet, function (callback) {
+                    var chkTweet = CarouselImageTweet(newAllData, newAlldataLength, code, total_msg_tweet, username, function (callback) {
                         console.log(callback);
                         if (callback == "done") {
                             var itemLen = carouselURL_video.length + 3;
                             var idImg = carouselURL_video.length + 2;
                             var total_msg_tweet = fistfixedTxt + igcaption + `(${idImg}/${itemLen})` + hashtagLink + timestmp;
 
-                            CarouselImageTweet(newAllData2, newAlldataLength2, code, total_msg_tweet, function (callback) {
+                            CarouselImageTweet(newAllData2, newAlldataLength2, code, total_msg_tweet, username, function (callback) {
                                 console.log(callback);
                                 if (callback == "done") {
                                     var itemLen = carouselURL_video.length + 3;
                                     var idImg = carouselURL_video.length + 3;
                                     var total_msg_tweet = fistfixedTxt + igcaption + `(${idImg}/${itemLen})` + hashtagLink + timestmp;
-                                    CarouselImageTweet(newAllData3, newAlldataLength3, code, total_msg_tweet, function (callback) {
+                                    CarouselImageTweet(newAllData3, newAlldataLength3, code, total_msg_tweet, username, function (callback) {
                                         console.log(callback);
                                     });
                                 }
@@ -843,7 +907,7 @@ function CheckMediaDataType(code, username) {
 }
 
 //FUNCTION TWEET IMAGE
-function TweetImage(code, total_msg_tweet) {
+function TweetImage(code, total_msg_tweet, username) {
     console.log(code, total_msg_tweet);
     //LENAYK
     var secret = config[`${username}`][0].auth;//require("./auth"); //save before launch (auth)
@@ -878,7 +942,7 @@ function TweetImage(code, total_msg_tweet) {
 
 
 //FUNCTION CAROUSEL TWEET
-function CarouselImageTweet(allData, allDataLength, code, total_msg_tweet, callback) {
+function CarouselImageTweet(allData, allDataLength, code, total_msg_tweet, username, callback) {
     var secret = config[`${username}`][0].auth;
     var Twitter = new TwitterPackage(secret);
     console.log("------Start Carousel Image Function--------");
@@ -953,7 +1017,7 @@ function TweetDel(status) {
 
 }
 
-function TweetMSG(status) {
+function TweetMSG(status, username) {
     var getStatus = status;
     var secret = config[`${username}`][0].auth;
     var Twitter = new TwitterPackage(secret);
@@ -969,12 +1033,13 @@ function TweetMSG(status) {
 
 //FUNCTION TWEET VIDEO
 
+
+// var secret = config[`${username}`][0].auth;
+
+// var OAUTH = secret;
+
 var MEDIA_ENDPOINT_URL = config.VIDEO.endpoint;
 var POST_TWEET_URL = config.VIDEO.post_tweet_url;
-var secret = config[`${username}`][0].auth;
-
-var OAUTH = secret;
-
 
 /**
  * Video Tweet constructor
@@ -984,14 +1049,24 @@ var VideoTweet = function (data) {
     var self = this;
     self.file_path = data.file_path;
     self.tweet_text = data.tweet_text;
+    self.username = data.username;
     self.total_bytes = undefined;
     self.media_id = undefined;
     self.processing_info = undefined;
 
+    var OAUTH = {
+        "consumer_key": config[`${self.username}`][0].auth.consumer_key,
+        "consumer_secret": config[`${self.username}`][0].auth.consumer_secret,
+        "token": config[`${self.username}`][0].auth.access_token_key,
+        "token_secret" : config[`${self.username}`][0].auth.access_token_secret
+    };
+console.log(OAUTH);
     // retreives file info and inits upload on complete
     fs.stat(self.file_path, function (error, stats) {
+
+
         self.total_bytes = stats.size
-        self.upload_init();
+        self.upload_init(OAUTH);
     });
 };
 
@@ -999,29 +1074,30 @@ var VideoTweet = function (data) {
 /**
  * Inits media upload
  */
-VideoTweet.prototype.upload_init = function () {
-
+VideoTweet.prototype.upload_init = function (OAUTH) {
+    console.log(OAUTH);
     console.log('INIT');
 
     var self = this;
-
-    form_data = {
+    console.log("-----------------------TOTAL BYTE : " + self.total_bytes);
+    var form_data = {
         'command': 'INIT',
         'media_type': 'video/mp4',
         'total_bytes': self.total_bytes,
         'media_category': 'tweetvideo'
     }
 
+
     // inits media upload
     request.post({ url: MEDIA_ENDPOINT_URL, oauth: OAUTH, formData: form_data }, function (error, response, body) {
 
         data = JSON.parse(body)
-
+        console.log(data);
         // store media ID for later reference
         self.media_id = data.media_id_string;
-
+        console.log(self.media_id)
         // start appening media segments
-        self.upload_append();
+        self.upload_append(OAUTH);
     });
 }
 
@@ -1029,7 +1105,7 @@ VideoTweet.prototype.upload_init = function () {
 /**
  * Uploads/appends video file segments
  */
-VideoTweet.prototype.upload_append = function () {
+VideoTweet.prototype.upload_append = function (OAUTH) {
 
     var buffer_length = 5000000;
     var buffer = new Buffer(buffer_length);
@@ -1039,7 +1115,6 @@ VideoTweet.prototype.upload_append = function () {
 
     // open and read video file
     fs.open(self.file_path, 'r', function (error, file_data) {
-
         var bytes_read, data,
             segment_index = 0,
             segments_completed = 0;
@@ -1058,6 +1133,9 @@ VideoTweet.prototype.upload_append = function () {
                 segment_index: segment_index,
                 media_data: data.toString('base64')
             };
+
+            console.log(self.media_id);
+
 
             request.post({ url: MEDIA_ENDPOINT_URL, oauth: OAUTH, formData: form_data }, function () {
                 segments_completed = segments_completed + 1;
@@ -1080,7 +1158,7 @@ VideoTweet.prototype.upload_append = function () {
 /**
  * Finalizes media segments uploaded 
  */
-VideoTweet.prototype.upload_finalize = function () {
+VideoTweet.prototype.upload_finalize = function (OAUTH) {
 
     console.log('FINALIZE');
 
@@ -1095,7 +1173,7 @@ VideoTweet.prototype.upload_finalize = function () {
     request.post({ url: MEDIA_ENDPOINT_URL, oauth: OAUTH, formData: form_data }, function (error, response, body) {
 
         data = JSON.parse(body)
-        self.check_status(data.processing_info);
+        self.check_status(data.processing_info, OAUTH);
     });
 }
 
@@ -1103,7 +1181,7 @@ VideoTweet.prototype.upload_finalize = function () {
 /**
  * Checks status of uploaded media
  */
-VideoTweet.prototype.check_status = function (processing_info) {
+VideoTweet.prototype.check_status = function (processing_info, OAUTH) {
 
     var self = this;
 
@@ -1119,6 +1197,7 @@ VideoTweet.prototype.check_status = function (processing_info) {
         'command': 'STATUS',
         'media_id': self.media_id
     }
+
 
     // check processing status 
     request.get({ url: MEDIA_ENDPOINT_URL, oauth: OAUTH, qs: request_params }, function (error, response, body) {
@@ -1142,7 +1221,7 @@ VideoTweet.prototype.check_status = function (processing_info) {
         console.log('Checking after ' + timeout_length + ' milliseconds');
 
         setTimeout(function () {
-            self.check_status(data.processing_info)
+            self.check_status(data.processing_info, OAUTH)
         }, timeout_length);
     });
 }
@@ -1151,7 +1230,7 @@ VideoTweet.prototype.check_status = function (processing_info) {
 /**
  * Tweets text with attached media
  */
-VideoTweet.prototype.tweet = function () {
+VideoTweet.prototype.tweet = function (OAUTH) {
 
     var self = this;
 

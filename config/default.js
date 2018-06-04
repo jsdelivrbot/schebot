@@ -14,7 +14,14 @@ module.exports =
             "name" : "JB",
             "hashtag" :"\n#JB #GOT7\n",
             "title" : "[DEFSTAGRAM] ",
-            "title_story" : "[DEF_STORY] "
+            "title_story" : "[DEF_STORY] ",
+            "id" : 6066760403,
+            "auth": {//Lena_YK
+                "consumer_key": "Ixvt8NaZavlDTxPxaGqd8FgOD",
+                "consumer_secret": "Ocnm7kCPd9jOztnYe3TZAU7vSUN9qGJ4hIEYV74Z2QNoJNPzB0",
+                "access_token_key": "768051804626051077-mmA2Zz4VYpP7dPI0vsKf2sdM3tqio4F",
+                "access_token_secret": "sXoLtfKSKIf7kgrAfs2TGCbwICQeruZeOIVX2rPyLOgKP"
+            }
 
         }
     ],
@@ -25,11 +32,18 @@ module.exports =
             "hashtag" : "\n#영재 #GOT7\n",
             "title" : "[YOUNGJAESTAGRAM] ",
             "title_story" : "[YOUNGJAE_STORY] ",
-            "auth": {
-                "consumer_key": "XPRMyf0XEgjKlAG1msgShdiFb",
-                "consumer_secret": "cZhBVhc17vNPxYav4m7BhuYGA9aNgId8WdmokzwBl66uEfY1XD",
-                "access_token_key": "703675814127149057-AhNFjjUVgN8fR9N2b86gctEgH0I8ENa",
-                "access_token_secret": "AfKLLxRj3EUhJG2Bg6Dt6hI9oMaDNzjAey3fNpjOEMNYR"
+            "id" : 1946899430,
+            // "auth": {
+            //     "consumer_key": "XPRMyf0XEgjKlAG1msgShdiFb",
+            //     "consumer_secret": "cZhBVhc17vNPxYav4m7BhuYGA9aNgId8WdmokzwBl66uEfY1XD",
+            //     "access_token_key": "703675814127149057-AhNFjjUVgN8fR9N2b86gctEgH0I8ENa",
+            //     "access_token_secret": "AfKLLxRj3EUhJG2Bg6Dt6hI9oMaDNzjAey3fNpjOEMNYR"
+            // }
+            "auth": {//Lena_YK
+                "consumer_key": "Ixvt8NaZavlDTxPxaGqd8FgOD",
+                "consumer_secret": "Ocnm7kCPd9jOztnYe3TZAU7vSUN9qGJ4hIEYV74Z2QNoJNPzB0",
+                "access_token_key": "768051804626051077-mmA2Zz4VYpP7dPI0vsKf2sdM3tqio4F",
+                "access_token_secret": "sXoLtfKSKIf7kgrAfs2TGCbwICQeruZeOIVX2rPyLOgKP"
             }
         }
     ],
