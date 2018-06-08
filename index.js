@@ -538,22 +538,30 @@ function CheckMediaDataType(code) {
         var hashtagLink = "\n#영재 #GOT7\n" + link + "\n";
         var timestmp = create_time_KR;
         console.log("timestmp : " + timestmp);
-
-        var txtLeft = 280 - fistfixedTxt.length - hashtagLink.length - timestmp.length - 3;
+        console.log("-----------------------CHECK LENGTH--------------------");
+        console.log("First Text : " + fistfixedTxt.length);
+        console.log("HASHTAG + LINK : " +hashtagLink.length );
+        console.log("TIMESTAMP :  " +  timestmp.length);
+        var txtLeft = 180 - fistfixedTxt.length - hashtagLink.length - timestmp.length - 3;
         console.log("txtLeft : " + txtLeft);
 
-        var igcaption;
+        //var igcaption;
+        var total_msg_tweet;
         if (txtcaption.length > txtLeft) {
             console.log("-- ig caption too long -- ")
-            igcaption = txtcaption.substring(0, txtLeft) + "...";
+            var igcaption = txtcaption.substring(0, txtLeft) + "...";
+            console.log("IG CAPTION : " + igcaption)
+            total_msg_tweet = fistfixedTxt + igcaption + hashtagLink + timestmp;
+
         }
         if (txtcaption.length <= txtLeft) {
             console.log("-- ig caption NOT too long -- ")
-            igcaption = txtcaption;
+            var igcaption = txtcaption;
+            total_msg_tweet = fistfixedTxt + igcaption + hashtagLink + timestmp;
         }
         //console.log("IG CAPTION : " + igcaption);
 
-        var total_msg_tweet = fistfixedTxt + igcaption + hashtagLink + timestmp;
+        //var total_msg_tweet = fistfixedTxt + igcaption + hashtagLink + timestmp;
         // console.log("total_msg_tweet :\n" + total_msg_tweet)
 
 
