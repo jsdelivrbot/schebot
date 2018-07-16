@@ -412,7 +412,8 @@ function DoCheckMedia(username) {
 
                         var item = body.items[c];
                         var itemCode = body.items[c].code;
-                        //var code = item.code;
+
+
                         //DateTime Taken
                         var taken_at = item.taken_at;
                         var taken_at_mm = moment.unix(taken_at);
@@ -420,43 +421,10 @@ function DoCheckMedia(username) {
                         console.log("Taken At : " + time_taken);
                         var time_taken_forchk = moment(taken_at_mm).format('YYYY-MM-DD HH:mm:00');
 
-
+                        var media_type = item.media_type;
                         if (time_taken_forchk == chklastMin) {
-
-                            //CAPTION
-                            var chkcaption = item.caption;
-                            var textcaption = "";
-                            if (chkcaption != null) {
-                                textcaption = item.caption.text;
-                            }
-                            var caption0 = "[YOUNGJAE_STORY] " + textcaption;
-                            var caption1 = "\n#영재 #GOT7\n";
-                            var caption = caption0 + caption1 + time_taken;
-                            console.log(caption);
-                            //Media Type
-                            var media_type = item.media_type;
-                            if (media_type == 1) { //Picture
-                                var original_width = item.original_width;
-                                var original_height = item.original_height;
-                                var img_ver2 = item.image_versions2;
-                                var candidates_length = item.image_versions2.candidates.length;
-                                console.log(candidates_length);
-                                for (var i = 0; i < candidates_length; i++) {
-                                    if (img_ver2.candidates[i].width == original_width && img_ver2.candidates[i].height == original_height) { // Maxinum,Original Image
-                                        console.log("found " + original_width, original_height);
-                                        var img_url = img_ver2.candidates[i].url;
-                                        console.log("Image URL : " + img_url);
-                                        var stream = request(img_url).pipe(fs.createWriteStream(`./public/media/${itemCode}.jpg`));
-                                        stream.on('finish', function () {
-                                            console.log('---stream done---')
-                                            //POST TWITTER
-                                            console.log("start tweet image");
-                                            TweetImage(storyid, caption);
-                                        });
-                                    }
-                                }
-
-
+                            if (media_type == 1) {
+                                CheckMediaDataType(itemCode);
                             }
 
                             if (media_type == 2) { //Video
@@ -466,18 +434,12 @@ function DoCheckMedia(username) {
                                 var stream = request(video_url).pipe(fs.createWriteStream(`./public/media/${itemCode}.mp4`));
                                 stream.on('finish', function () {
                                     console.log('---stream video done---')
-
                                     var file_path = `./public/media/${itemCode}.mp4`;
                                     TweetVideo(file_path, caption);
-                                    // var videoTweet = new VideoTweet({
-                                    //     file_path: `./public/media/${storyid}.mp4`,
-                                    //     tweet_text: caption
-                                    // });
                                 });
 
 
                             }
-
                         }
                     }
 
@@ -539,6 +501,11 @@ function CheckMediaDataType(code) {
         //TEXT TWEET
         var fistfixedTxt = "[YOUNGJAESTAGRAM] ";
         var hashtagLink = "\n#영재 #GOT7\n" + link + "\n";
+
+        if (__typename == "GraphStoryImage") {
+            fistfixedTxt = "[YOUNGJAE_STORY] ";
+            hashtagLink = "\n#영재 #GOT7\n";
+        }
         var timestmp = create_time_KR;
         console.log("timestmp : " + timestmp);
         console.log("-----------------------CHECK LENGTH--------------------");
@@ -860,6 +827,39 @@ function CheckMediaDataType(code) {
 
 
         }
+
+
+        //STORY TYPE IMAGE
+        if (__typename == "GraphStoryImage") {
+            //Story Image
+            var dim_height = nodes.dimensions.height;
+            var dim_width = nodes.dimensions.width;
+            for (var d = 0; d < nodes.display_resources.length; d++) {
+                var getConfigH = nodes.display_resources[d].config_height;
+                var getConfigW = nodes.display_resources[d].config_width;
+                console.log(getConfigH);
+                console.log(getConfigW);
+                if (getConfigH == dim_height && getConfigW == dim_width) {
+                    var img_url = nodes.display_resources[d].src;
+                    console.log("IMG URL : " + img_url);
+
+                    var stream = request(img_url).pipe(fs.createWriteStream(`./public/media/${code}.jpg`));
+                    stream.on('finish', function () {
+                        console.log('---stream done---')
+                        //POST TWITTER
+                        console.log("start tweet image");
+                        TweetImage(code, total_msg_tweet);
+                    });
+                }
+
+
+
+
+
+
+            }
+        }
+
     });
 }
 
