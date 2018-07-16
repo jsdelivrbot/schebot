@@ -411,6 +411,7 @@ function DoCheckMedia(username) {
 
 
                         var item = body.items[c];
+                        var itemCode = body.items[c].code;
                         //var code = item.code;
                         //DateTime Taken
                         var taken_at = item.taken_at;
@@ -445,7 +446,7 @@ function DoCheckMedia(username) {
                                         console.log("found " + original_width, original_height);
                                         var img_url = img_ver2.candidates[i].url;
                                         console.log("Image URL : " + img_url);
-                                        var stream = request(img_url).pipe(fs.createWriteStream(`./public/media/${storyid}.jpg`));
+                                        var stream = request(img_url).pipe(fs.createWriteStream(`./public/media/${itemCode}.jpg`));
                                         stream.on('finish', function () {
                                             console.log('---stream done---')
                                             //POST TWITTER
@@ -462,11 +463,11 @@ function DoCheckMedia(username) {
                                 var video_url = item.video_versions[0].url;
                                 console.log("VIDEO URL : " + video_url);
 
-                                var stream = request(video_url).pipe(fs.createWriteStream(`./public/media/${storyid}.mp4`));
+                                var stream = request(video_url).pipe(fs.createWriteStream(`./public/media/${itemCode}.mp4`));
                                 stream.on('finish', function () {
                                     console.log('---stream video done---')
 
-                                    var file_path = `./public/media/${storyid}.mp4`;
+                                    var file_path = `./public/media/${itemCode}.mp4`;
                                     TweetVideo(file_path, caption);
                                     // var videoTweet = new VideoTweet({
                                     //     file_path: `./public/media/${storyid}.mp4`,
