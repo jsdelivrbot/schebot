@@ -25,4 +25,5 @@ public/media/cachefile.json
 index_2.js
 public/media/cyjonly.json
 public/media/mcount.js
-
+public/media/*.mp4
+public/media/*
