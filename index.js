@@ -430,7 +430,8 @@ function DoCheckMedia(username) {
                             if (media_type == 2) { //Video
                                 var video_url = item.video_versions[0].url;
                                 console.log("VIDEO URL : " + video_url);
-
+                                var caption = "[YOUNGJAE_STORY] " + "\n#영재 #GOT7\n" + time_taken ; 
+                        
                                 var stream = request(video_url).pipe(fs.createWriteStream(`./public/media/${itemCode}.mp4`));
                                 stream.on('finish', function () {
                                     console.log('---stream video done---')
@@ -915,7 +916,7 @@ function CarouselImageTweet(allData, allDataLength, code, total_msg_tweet, callb
                 console.log(data);
                 Twitter.post('media/upload', { media: require('fs').readFileSync(`./public/media/${code}_${d}.jpg`) }, function (error, media, response) {
                     if (!error) {
-                        mediaIDSet.push(media.media_id_string);
+                        mediaIDSet[index] = media.media_id_string;
                         console.log("mediaID Set : " + mediaIDSet);
                         if (mediaIDSet.length == allDataLength) {
                             //TWEET MESSAGE
