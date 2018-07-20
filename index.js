@@ -994,7 +994,7 @@ function TweetMSG(status) {
 function TweetVideo(file_path, total_msg_tweet) {
 
     //FUNCTION TWEET VIDEO
-    var secret = require('auth'); //(lenayk : auth_lena.json) (main : oauth.json)
+    var secret = require('./auth'); //(lenayk : auth_lena.json) (main : oauth.json)
 
     var client = new TwitterPackage(secret);
     var mediaType = 'video/mp4';//'image/gif'; // `'video/mp4'` is also supported
