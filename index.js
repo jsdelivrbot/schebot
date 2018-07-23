@@ -391,8 +391,8 @@ function DoCheckMedia(username) {
 
 
             //SESSION ID
-            var session_id = "IGSC477a4db653a8aa190755c21f3a9b79354829e639893a0e8616e8896dc82cc35e%3AZLTkdjiyZs46NGt4ecDskm2obFrZFFCt%3A%7B%22_auth_user_id%22%3A55502361%2C%22_auth_user_backend%22%3A%22accounts.backends.CaseInsensitiveModelBackend%22%2C%22_auth_user_hash%22%3A%22%22%2C%22_platform%22%3A4%2C%22_token_ver%22%3A2%2C%22_token%22%3A%2255502361%3A1VkcHjcNMfYpOJzuxH538jjpztZzRpKJ%3A35bb8bca913d21bbf6e1977e18e2aa06b5ddcf3e40429aac7e490618028464db%22%2C%22last_refreshed%22%3A1524452065.9287192822%7D";
-            //expired : 2018-07-22T02:57:03.619Z
+            var session_id = "IGSC45630549fa98ba70c0de82b96741efdec9b4463fd390016129f926bb9242f6d9%3AOy8X8ZbpmI7voRgKE9QPVeax8BV7kXpK%3A%7B%22_auth_user_id%22%3A55502361%2C%22_auth_user_backend%22%3A%22accounts.backends.CaseInsensitiveModelBackend%22%2C%22_auth_user_hash%22%3A%22%22%2C%22_platform%22%3A4%2C%22_token_ver%22%3A2%2C%22_token%22%3A%2255502361%3AK1JRt7DGgmZBUvpDaKN8EkzbezztWJj6%3A5412bded8d87c4de5c26fe13592a58b9499be5bb3a86d00be83eb151bc4b2729%22%2C%22last_refreshed%22%3A1532309693.2796940804%7D";
+            //expired : 2018-10-21T01:34:50.039Z
             var cyjid = 1946899430;
             var somzid = 55502361;
 
