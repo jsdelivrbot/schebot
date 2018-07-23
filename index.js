@@ -15,7 +15,6 @@ var screenshot = require('screenshot-stream');
 var store = require('json-fs-store')('./public/media/');
 var Twitter = require('twitter');
 const config = require('./config/default');
-var MongoClient = require('mongodb').MongoClient;
 const assert = require('assert');
 const async = require('async');
 var CronJob = require('cron').CronJob;
@@ -29,11 +28,6 @@ const {
     getUserByUsername,
     getVideoLive
 } = require('instagram-stories')
-
-// Connection URL
-const dbURL = "mongodb+srv://admin:admin@schebot-8rhzu.mongodb.net/test?retryWrites=true";
-// Database Name
-const dbName = 'igbot';
 
 app.set('port', (process.env.PORT || 5000));
 // app.use(express.bodyParser());
