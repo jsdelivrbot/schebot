@@ -362,7 +362,7 @@ function DoCheckMedia(username, username2, username3) {
                                 var getItemLen = object.itemLen_def;
                                 //console.log("itemLength Last Minute : " + getItemLen);
                                 //CHECK
-                               
+
 
                                 //โพสต์ภาพใหม่
                                 if (count > getItemLen) {
@@ -381,7 +381,7 @@ function DoCheckMedia(username, username2, username3) {
 
                         });
 
-                        
+
                         callback(null, ars_itemlen, def_itemlen);
 
                     }
@@ -553,7 +553,7 @@ function GetStory(username) {
                         stream.on('finish', function () {
                             console.log('---stream video done---')
                             var file_path = `./public/media/${itemCode}.mp4`;
-                            TweetVideo(file_path, caption);
+                            TweetVideo(file_path, caption, username);
                         });
 
 
@@ -609,7 +609,7 @@ function GetStoryFromPost(num, username) {
                     stream.on('finish', function () {
                         console.log('---stream video done---')
                         var file_path = `./public/media/${itemCode}.mp4`;
-                        TweetVideo(file_path, caption);
+                        TweetVideo(file_path, caption, username);
                     });
 
 
@@ -913,7 +913,7 @@ function CheckMediaDataType(code, username) {
                 console.log('---stream video done---')
 
                 var file_path = `./public/media/${code}.mp4`;
-                TweetVideo(file_path, total_msg_tweet);
+                TweetVideo(file_path, total_msg_tweet, username);
             });
         }
 
@@ -1348,7 +1348,7 @@ function TweetDel(status) {
     stream.on('finish', function () {
 
         var getStatus = status;
-        var secret = require("./auth_del");
+        var secret = config.auth_del;//require("./auth_del");
         var Twitter = new TwitterPackage(secret);
         var data = require('fs').readFileSync(`./public/media/choidel.png`);
         Twitter.post('media/upload', { media: data }, function (error, media, response) {
@@ -1386,226 +1386,10 @@ function TweetMSG(status, username) {
 }
 
 //FUNCTION TWEET VIDEO
-
-
-// var secret = config[`${username}`][0].auth;
-
-// var OAUTH = secret;
-
-var MEDIA_ENDPOINT_URL = config.VIDEO.endpoint;
-var POST_TWEET_URL = config.VIDEO.post_tweet_url;
-
-/**
- * Video Tweet constructor
- **/
-var VideoTweet = function (data) {
-
-    var self = this;
-    self.file_path = data.file_path;
-    self.tweet_text = data.tweet_text;
-    self.username = data.username;
-    self.total_bytes = undefined;
-    self.media_id = undefined;
-    self.processing_info = undefined;
-
-    var OAUTH = {
-        "consumer_key": config[`${self.username}`][0].auth.consumer_key,
-        "consumer_secret": config[`${self.username}`][0].auth.consumer_secret,
-        "token": config[`${self.username}`][0].auth.access_token_key,
-        "token_secret": config[`${self.username}`][0].auth.access_token_secret
-    };
-    console.log(OAUTH);
-    // retreives file info and inits upload on complete
-    fs.stat(self.file_path, function (error, stats) {
-
-
-        self.total_bytes = stats.size
-        self.upload_init(OAUTH);
-    });
-};
-
-
-/**
- * Inits media upload
- */
-VideoTweet.prototype.upload_init = function (OAUTH) {
-    console.log(OAUTH);
-    console.log('INIT');
-
-    var self = this;
-    console.log("-----------------------TOTAL BYTE : " + self.total_bytes);
-    var form_data = {
-        'command': 'INIT',
-        'media_type': 'video/mp4',
-        'total_bytes': self.total_bytes,
-        'media_category': 'tweetvideo'
-    }
-
-
-    // inits media upload
-    request.post({ url: MEDIA_ENDPOINT_URL, oauth: OAUTH, formData: form_data }, function (error, response, body) {
-
-        data = JSON.parse(body)
-        console.log(data);
-        // store media ID for later reference
-        self.media_id = data.media_id_string;
-        console.log(self.media_id)
-        // start appening media segments
-        self.upload_append(OAUTH);
-    });
-}
-
-
-/**
- * Uploads/appends video file segments
- */
-VideoTweet.prototype.upload_append = function (OAUTH) {
-
-    var buffer_length = 5000000;
-    var buffer = new Buffer(buffer_length);
-    var bytes_sent = 0;
-
-    var self = this;
-
-    // open and read video file
-    fs.open(self.file_path, 'r', function (error, file_data) {
-        var bytes_read, data,
-            segment_index = 0,
-            segments_completed = 0;
-
-        // upload video file in chunks
-        while (bytes_sent < self.total_bytes) {
-
-            console.log('APPEND');
-
-            bytes_read = fs.readSync(file_data, buffer, 0, buffer_length, null);
-            data = bytes_read < buffer_length ? buffer.slice(0, bytes_read) : buffer;
-
-            var form_data = {
-                command: 'APPEND',
-                media_id: self.media_id,
-                segment_index: segment_index,
-                media_data: data.toString('base64')
-            };
-
-            console.log(self.media_id);
-
-
-            request.post({ url: MEDIA_ENDPOINT_URL, oauth: OAUTH, formData: form_data }, function () {
-                segments_completed = segments_completed + 1;
-
-                console.log('segment_completed');
-                if (segments_completed == segment_index) {
-                    console.log('Upload chunks complete');
-                    self.upload_finalize(OAUTH);
-                }
-            });
-
-            bytes_sent = bytes_sent + buffer_length;
-            segment_index = segment_index + 1;
-        }
-    });
-
-}
-
-
-/**
- * Finalizes media segments uploaded 
- */
-VideoTweet.prototype.upload_finalize = function (OAUTH) {
-
-    console.log('FINALIZE');
-
-    var self = this;
-
-    form_data = {
-        'command': 'FINALIZE',
-        'media_id': self.media_id
-    }
-
-    // finalize uploaded chunck and check processing status on compelete
-    request.post({ url: MEDIA_ENDPOINT_URL, oauth: OAUTH, formData: form_data }, function (error, response, body) {
-
-        data = JSON.parse(body)
-        self.check_status(data.processing_info, OAUTH);
-    });
-}
-
-
-/**
- * Checks status of uploaded media
- */
-VideoTweet.prototype.check_status = function (processing_info, OAUTH) {
-
-    var self = this;
-
-    // if response does not contain any processing_info, then video is ready
-    if (!processing_info) {
-        self.tweet(OAUTH);
-        return;
-    }
-
-    console.log('STATUS');
-
-    request_params = {
-        'command': 'STATUS',
-        'media_id': self.media_id
-    }
-
-
-    // check processing status 
-    request.get({ url: MEDIA_ENDPOINT_URL, oauth: OAUTH, qs: request_params }, function (error, response, body) {
-
-        data = JSON.parse(body)
-
-        console.log('Media processing status is ' + processing_info.state);
-
-        if (processing_info.state == 'succeeded') {
-            self.tweet(OAUTH);
-            return
-        }
-
-        else if (processing_info.state == 'failed') {
-            return;
-        }
-
-        // check status again after specified duration
-        var timeout_length = data.processing_info.check_after_secs ? data.processing_info.check_after_secs * 1000 : 0;
-
-        console.log('Checking after ' + timeout_length + ' milliseconds');
-
-        setTimeout(function () {
-            self.check_status(data.processing_info, OAUTH)
-        }, timeout_length);
-    });
-}
-
-
-/**
- * Tweets text with attached media
- */
-VideoTweet.prototype.tweet = function (OAUTH) {
-
-    var self = this;
-
-    request_data = {
-        'status': self.tweet_text,
-        'media_ids': self.media_id
-    }
-
-    // publish Tweet
-    request.post({ url: POST_TWEET_URL, oauth: OAUTH, form: request_data }, function (error, response, body) {
-        data = JSON.parse(body)
-        console.log(data);
-    });
-}
-
-
-
-function TweetVideo(file_path, total_msg_tweet) {
+function TweetVideo(file_path, total_msg_tweet, username) {
 
     //FUNCTION TWEET VIDEO
-    var secret = require('./oauth'); //LENAYK() (old : oauth.json)
+    var secret = config[`${username}`][0].auth;//require('./oauth'); //LENAYK() (old : oauth.json)
 
     var client = new TwitterPackage(secret);
     var mediaType = 'video/mp4';//'image/gif'; // `'video/mp4'` is also supported
