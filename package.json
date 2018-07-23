@@ -5,9 +5,9 @@
   "engines": {
     "node": "6.11.1"
   },
-  "main": "index_3.js",
+  "main": "index.js",
   "scripts": {
-    "start": "node index_3.js"
+    "start": "node index.js"
   },
   "dependencies": {
     "agenda": "^0.9.1",
