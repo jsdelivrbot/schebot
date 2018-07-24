@@ -414,24 +414,7 @@ function DoCheckMedia(username, username2, username3) {
                                 //console.log("loadded : " + unixLastMin);
                                 var getItemLen = object.itemLen_coco;
                                 //console.log("itemLength Last Minute : " + getItemLen);
-                                //NO CHECK DEF DELETE
-
-
-                                //โพสต์ภาพใหม่
-                                if (count > getItemLen) {
-                                    console.log("-----NEW POST------");
-                                    var nPost = count - getItemLen;
-                                    for (var i = 0; i < nPost; i++) {
-                                        var nodes = body.graphql.user.edge_owner_to_timeline_media.edges[i].node;//body.user.media.nodes[i];
-                                        //__typename : , GraphImage,GraphSidecar,GraphVideo?
-                                        var code = nodes.shortcode;//nodes.code;
-                                        CheckMediaDataType(code, username3);
-                                    }
-                                }
-                                //console.log("loadded : " + unixLastMin);
-                                var getItemLen = object.itemLen_coco;
-                                //console.log("itemLength Last Minute : " + getItemLen);
-                                //NO CHECK DEF DELETE
+                                //NO CHECK DEF DELETฎ
 
 
                                 //โพสต์ภาพใหม่
