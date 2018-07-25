@@ -418,7 +418,7 @@ function DoCheckMedia(username, username2, username3) {
 
 
                                 //โพสต์ภาพใหม่
-                                if (count > getItemLen) {
+                                if (coco_itemlen > getItemLen) {
                                     console.log("-----NEW POST------");
                                     var nPost = count - getItemLen;
                                     for (var i = 0; i < nPost; i++) {
