@@ -1155,7 +1155,7 @@ function CheckMediaDataType(code, username) {
                         console.log('---stream done---')
                         //POST TWITTER
                         console.log("start tweet image");
-                        TweetImage(code, total_msg_tweet);
+                        TweetImage(code, total_msg_tweet,username);
                     });
                 }
 
