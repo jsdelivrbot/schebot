@@ -19,6 +19,7 @@ const assert = require('assert');
 const async = require('async');
 var CronJob = require('cron').CronJob;
 var multi = require('multi-write-stream');
+var MongoClient = require('mongodb').MongoClient;
 
 //GET STORY
 const {
@@ -51,6 +52,10 @@ server.listen(app.get('port'), function () {
 
 
 
+// Connection URL
+const dbURL = "mongodb+srv://admin:admin@schebot-8rhzu.mongodb.net/test?retryWrites=true";
+// Database Name
+const dbName = 'igbot';
 
 //PREVENT BEFORE POST
 app.post('/getJson/:username/:num', function (req, res) {
@@ -74,16 +79,12 @@ app.post('/getJson/:username/:num', function (req, res) {
     });
     res.sendStatus(200);
 });
-
-
 app.post('/getJsonByPost/:username/:code', (req, res) => {
     var username = req.params.username;
     var code = req.params.code;
     CheckMediaDataType(code, username);
     res.sendStatus(200);
 });
-
-
 app.post('/p/getstory/:username/:num', (req, res) => {
     var username = req.params.username;
     var num = req.params.num;
@@ -127,7 +128,20 @@ function FirstSetting(username1, username2, username3) {
 
                         var FitemLen = body.graphql.user.edge_owner_to_timeline_media.count;//body.user.media.count;
 
-                        callback(null, FitemLen);
+                        //Get Latest Caption
+                        var caption = "";
+                        var captionLen = body.graphql.user.edge_owner_to_timeline_media.edges[0].node.edge_media_to_caption.edges.length;
+                        if (captionLen > 0) {
+                            caption = body.graphql.user.edge_owner_to_timeline_media.edges[0].node.edge_media_to_caption.edges[0].node.text;
+                        }
+                        var shortcode = body.graphql.user.edge_owner_to_timeline_media.edges[0].node.shortcode;
+                        var code_detail = {
+                            shortcode: shortcode,
+                            caption: caption
+                        }
+                        console.log("First Setting \n Caption is : " + caption);
+
+                        callback(null, FitemLen, code_detail);
                     } catch (e) {
                         console.log(e);
                     }
@@ -135,7 +149,7 @@ function FirstSetting(username1, username2, username3) {
             });
 
         },
-        function (arg1, callback) {
+        function (arg1, code_detail, callback) {
             // arg1 now equals 'one' and arg2 now equals 'two'
             console.log("WATERFALL 2");
             console.log(arg1);
@@ -154,7 +168,21 @@ function FirstSetting(username1, username2, username3) {
                         var FitemLen = body.graphql.user.edge_owner_to_timeline_media.count;//body.user.media.count;
                         var def_itemlen = FitemLen;
                         console.log(ars_itemlen, def_itemlen);
-                        callback(null, ars_itemlen, def_itemlen);
+
+                        //Get Latest Caption
+                        var caption2 = "";
+                        var captionLen = body.graphql.user.edge_owner_to_timeline_media.edges[0].node.edge_media_to_caption.edges.length;
+                        if (captionLen > 0) {
+                            caption2 = body.graphql.user.edge_owner_to_timeline_media.edges[0].node.edge_media_to_caption.edges[0].node.text;
+                        }
+                        var shortcode = body.graphql.user.edge_owner_to_timeline_media.edges[0].node.shortcode;
+                        var code_detail2 = {
+                            shortcode: shortcode,
+                            caption: caption2
+                        }
+                        console.log("First Setting \n Caption is : " + caption2);
+
+                        callback(null, ars_itemlen, def_itemlen, code_detail, code_detail2);
 
 
                     } catch (e) {
@@ -165,7 +193,7 @@ function FirstSetting(username1, username2, username3) {
 
 
         },
-        function (arg1, arg2, callback) {
+        function (arg1, arg2, code_detail, code_detail2, callback) {
             console.log("WATERFALL 3");
             console.log(arg1, arg2);
             var ars_itemlen = arg1;
@@ -186,16 +214,29 @@ function FirstSetting(username1, username2, username3) {
                         console.log("coco item length " + coco_itemlen);
                         // console.log(ars_itemlen, def_itemlen);
 
-
+                        //Get Latest Caption
+                        var caption3 = "";
+                        var captionLen = body.graphql.user.edge_owner_to_timeline_media.edges[0].node.edge_media_to_caption.edges.length;
+                        if (captionLen > 0) {
+                            caption3 = body.graphql.user.edge_owner_to_timeline_media.edges[0].node.edge_media_to_caption.edges[0].node.text;
+                        }
+                        var shortcode = body.graphql.user.edge_owner_to_timeline_media.edges[0].node.shortcode;
+                        var code_detail3 = {
+                            shortcode: shortcode,
+                            caption: caption3
+                        }
+                        console.log("First Setting \n Caption is : " + caption3);
 
                         var backUpLastMinData = {
                             id: unixLastMinFirstSett, //also filename
                             // "name": "item",
                             "itemLen_ars": ars_itemlen,
+                            "code_ars": code_detail,
                             "itemLen_def": def_itemlen,
-                            "itemLen_coco": coco_itemlen
+                            "code_def": code_detail2,
+                            "itemLen_coco": coco_itemlen,
+                            "code_coco": code_detail3
                         };
-
                         console.log("first setting file :" + unixLastMinFirstSett);
                         store.add(backUpLastMinData, function (err) {
                             console.log("--------------[First Setting Success]-------------");
@@ -218,7 +259,6 @@ function FirstSetting(username1, username2, username3) {
 
 
 }
-
 
 function fetchJson() {
     //CheckMedia if file change
@@ -244,14 +284,6 @@ function fetchJson() {
     console.log('job status is : ', job.running);
 
 
-}
-
-function fetchJson_Def() {
-    //CheckMedia if file change
-    console.log("-------------[DEF_START CHECK MEDIA]-----------");
-    //AlbumSales();
-    DoCheckMedia_Def(getname2_def);
-    setTimeout(fetchJson_Def, 60000); // Fetch it again in a 60 second
 }
 
 //CHECK MEDIA
@@ -286,6 +318,21 @@ function DoCheckMedia(username, username2, username3) {
                         var count = body.graphql.user.edge_owner_to_timeline_media.count;//body.user.media.count;
                         //var follower = body.graphql.user.edge_followed_by.count;
 
+                        //Get Latest Caption
+                        var caption = "";
+                        var captionLen = body.graphql.user.edge_owner_to_timeline_media.edges[0].node.edge_media_to_caption.edges.length;
+                        if (captionLen > 0) {
+                            caption = body.graphql.user.edge_owner_to_timeline_media.edges[0].node.edge_media_to_caption.edges[0].node.text;
+                        }
+                        var shortcode = body.graphql.user.edge_owner_to_timeline_media.edges[0].node.shortcode;
+                        var code_detail = {
+                            shortcode: shortcode,
+                            caption: caption
+                        }
+
+
+
+
                         store.load(unixLastMin, function (err, object) {
                             if (err) console.log(err);
                             else {
@@ -313,6 +360,50 @@ function DoCheckMedia(username, username2, username3) {
                                         CheckMediaDataType(code, username);
                                     }
                                 }
+
+                                //No New Post
+                                if (count == getItemLen) {
+                                    //Check Caption
+                                    var load_shortcode = object.code_ars.shortcode;
+                                    var load_caption = object.code_ars.caption;
+                                    if (shortcode == load_shortcode) {
+                                        //Same Post
+                                        if (caption != load_caption) {
+                                            //caption change
+                                            CheckCaptionIsEdit(shortcode, function (err, result) {
+                                                if (err) console.log(err);
+                                                else {
+                                                    if (result == true) {
+                                                        //Caption Edited Confirm
+                                                        console.log("******* CAPTION IS EDIT *******");
+                                                        MongoClient.connect(dbURL, function (err, client, total_msg_tweet) {
+                                                            assert.equal(null, err);
+                                                            var db = client.db(dbName);
+                                                            findShortCode(db, shortcode, function (callback) {
+                                                                //--------DO AFTER CHECK
+                                                                if (callback != false) {
+                                                                    //console.log(callback);
+                                                                    var data = callback;
+                                                                    var tweet = data[0].tweet;
+                                                                    ReplyTweet(tweet, caption, username);
+                                                                } else {
+                                                                    console.log("Cannot Load Data")
+                                                                }
+                                                                client.close();
+
+                                                            });
+
+                                                        });
+
+                                                    } else {
+                                                        console.log("******* CAPTION IS NOT CHANGE *******");
+                                                    }
+                                                }
+                                            });
+                                        }
+                                    }
+                                }
+
                             }
 
 
@@ -322,7 +413,11 @@ function DoCheckMedia(username, username2, username3) {
                         GetStory(username);
 
                         ars_itemlen = count;
-                        callback(null, ars_itemlen);
+
+
+
+
+                        callback(null, ars_itemlen, code_detail);
                     } catch (e) {
                         console.log(e);
                     }
@@ -331,7 +426,7 @@ function DoCheckMedia(username, username2, username3) {
             });
 
 
-        }, function (arg1, callback) {
+        }, function (arg1, code_detail, callback) {
             var ars_itemlen = arg1;
             request({
                 url: `https://www.instagram.com/${username2}`,
@@ -349,6 +444,17 @@ function DoCheckMedia(username, username2, username3) {
                         //var follower = body.graphql.user.edge_followed_by.count;
                         def_itemlen = count;
 
+                        //Get Latest Caption
+                        var caption2 = "";
+                        var captionLen = body.graphql.user.edge_owner_to_timeline_media.edges[0].node.edge_media_to_caption.edges.length;
+                        if (captionLen > 0) {
+                            caption2 = body.graphql.user.edge_owner_to_timeline_media.edges[0].node.edge_media_to_caption.edges[0].node.text;
+                        }
+                        var shortcode = body.graphql.user.edge_owner_to_timeline_media.edges[0].node.shortcode;
+                        var code_detail2 = {
+                            shortcode: shortcode,
+                            caption: caption2
+                        }
                         store.load(unixLastMin, function (err, object) {
                             if (err) console.log(err);
                             else {
@@ -369,14 +475,57 @@ function DoCheckMedia(username, username2, username3) {
                                         CheckMediaDataType(code, username2);
                                     }
                                 }
+
+                                //No New Post
+                                if (count == getItemLen) {
+                                    //Check Caption
+                                    var load_shortcode = object.code_def.shortcode;
+                                    var load_caption = object.code_def.caption;
+                                    if (shortcode == load_shortcode) {
+                                        //Same Post
+                                        if (caption2 != load_caption) {
+                                            //caption change
+                                            CheckCaptionIsEdit(shortcode, function (err, result) {
+                                                if (err) console.log(err);
+                                                else {
+                                                    if (result == true) {
+                                                        //Caption Edited Confirm
+                                                        console.log("******* CAPTION IS EDIT *******");
+                                                        MongoClient.connect(dbURL, function (err, client, total_msg_tweet) {
+                                                            assert.equal(null, err);
+                                                            var db = client.db(dbName);
+                                                            findShortCode(db, shortcode, function (callback) {
+                                                                //--------DO AFTER CHECK
+                                                                if (callback != false) {
+                                                                    //console.log(callback);
+                                                                    var data = callback;
+                                                                    var tweet = data[0].tweet;
+                                                                    ReplyTweet(tweet, caption2, username2);
+                                                                } else {
+                                                                    console.log("Cannot Load Data")
+                                                                }
+                                                                client.close();
+
+                                                            });
+
+                                                        });
+
+                                                    } else {
+                                                        console.log("******* CAPTION IS NOT CHANGE *******");
+                                                    }
+                                                }
+                                            });
+                                        }
+                                    }
+                                }
+
                                 GetStory(username2);
                             }
 
 
                         });
 
-
-                        callback(null, ars_itemlen, def_itemlen);
+                        callback(null, ars_itemlen, def_itemlen, code_detail, code_detail2);
 
                     }
                     catch (e) {
@@ -385,7 +534,7 @@ function DoCheckMedia(username, username2, username3) {
                 }
             });
         },
-        function (arg1, arg2, callback) {
+        function (arg1, arg2, code_detail, code_detail2, callback) {
             // arg1 now equals 'one' and arg2 now equals 'two'
             console.log("WATERFALL 3");
             console.log(arg1);
@@ -408,13 +557,25 @@ function DoCheckMedia(username, username2, username3) {
                         //var follower = body.graphql.user.edge_followed_by.count;
                         var coco_itemlen = count;
 
+                        //Get Latest Caption
+                        var caption3 = "";
+                        var captionLen = body.graphql.user.edge_owner_to_timeline_media.edges[0].node.edge_media_to_caption.edges.length;
+                        if (captionLen > 0) {
+                            caption3 = body.graphql.user.edge_owner_to_timeline_media.edges[0].node.edge_media_to_caption.edges[0].node.text;
+                        }
+                        var shortcode = body.graphql.user.edge_owner_to_timeline_media.edges[0].node.shortcode;
+                        var code_detail3 = {
+                            shortcode: shortcode,
+                            caption: caption3
+                        }
+
                         store.load(unixLastMin, function (err, object) {
                             if (err) console.log(err);
                             else {
                                 //console.log("loadded : " + unixLastMin);
                                 var getItemLen = object.itemLen_coco;
                                 //console.log("itemLength Last Minute : " + getItemLen);
-                                //NO CHECK DEF DELETฎ
+                                //NO CHECK DEF DELETE
 
 
                                 //โพสต์ภาพใหม่
@@ -428,11 +589,56 @@ function DoCheckMedia(username, username2, username3) {
                                         CheckMediaDataType(code, username3);
                                     }
                                 }
+
+                                //No New Post
+                                if (count == getItemLen) {
+                                    //Check Caption
+                                    var load_shortcode = object.code_coco.shortcode;
+                                    var load_caption = object.code_coco.caption;
+                                    if (shortcode == load_shortcode) {
+                                        //Same Post
+                                        if (caption3 != load_caption) {
+                                            //caption change
+                                            CheckCaptionIsEdit(shortcode, function (err, result) {
+                                                if (err) console.log(err);
+                                                else {
+                                                    if (result == true) {
+                                                        //Caption Edited Confirm
+                                                        console.log("******* CAPTION IS EDIT *******");
+                                                        MongoClient.connect(dbURL, function (err, client, total_msg_tweet) {
+                                                            assert.equal(null, err);
+                                                            var db = client.db(dbName);
+                                                            findShortCode(db, shortcode, function (callback) {
+                                                                //--------DO AFTER CHECK
+                                                                if (callback != false) {
+                                                                    //console.log(callback);
+                                                                    var data = callback;
+                                                                    var tweet = data[0].tweet;
+                                                                    ReplyTweet(tweet, caption3, username3);
+                                                                } else {
+                                                                    console.log("Cannot Load Data")
+                                                                }
+                                                                client.close();
+
+                                                            });
+
+                                                        });
+
+                                                    } else {
+                                                        console.log("******* CAPTION IS NOT CHANGE *******");
+                                                    }
+                                                }
+                                            });
+                                        }
+                                    }
+                                }
                                 GetStory(username3);
                             }
 
 
                         });
+
+
 
                         //STORE DATA
                         console.log("----------STORE NEW DATA-----------");
@@ -444,8 +650,11 @@ function DoCheckMedia(username, username2, username3) {
                         var backUpData = {
                             id: unixCurrenttime, //also filename
                             "itemLen_ars": ars_itemlen,
+                            "code_ars": code_detail,
                             "itemLen_def": def_itemlen,
-                            "itemLen_coco": coco_itemlen
+                            "code_def": code_detail2,
+                            "itemLen_coco": coco_itemlen,
+                            "code_coco": code_detail3
                         };
 
                         store.add(backUpData, function (err) {
@@ -478,7 +687,18 @@ function DoCheckMedia(username, username2, username3) {
 
 }
 
+function CheckCaptionIsEdit(shortcode, callback) {
+    request({
+        url: `https://www.instagram.com/p/${shortcode}/?__a=1`,
+        json: true
+    }, function (error, response, body) {
+        var nodes = body.graphql.shortcode_media;
+        result = nodes.caption_is_edited;
+        console.log("*********caption edited is : " + result);
 
+        callback(null, result);
+    });
+}
 function GetStory(username) {
 
     var chklastMin = moment().subtract(1, 'minute').format('YYYY-MM-DD HH:mm:00');
@@ -530,7 +750,7 @@ function GetStory(username) {
                         stream.on('finish', function () {
                             console.log('---stream video done---')
                             var file_path = `./public/media/${itemCode}.mp4`;
-                            TweetVideo(file_path, caption, username);
+                            TweetVideo(file_path, caption, username, itemCode);
                         });
 
 
@@ -586,7 +806,7 @@ function GetStoryFromPost(num, username) {
                     stream.on('finish', function () {
                         console.log('---stream video done---')
                         var file_path = `./public/media/${itemCode}.mp4`;
-                        TweetVideo(file_path, caption, username);
+                        TweetVideo(file_path, caption, username, itemCode);
                     });
 
 
@@ -599,192 +819,7 @@ function GetStoryFromPost(num, username) {
         }
     })
 }
-//CHECK MEDIA DEF
-function DoCheckMedia_Def(username) {
-    console.log(username);
 
-    // req("https://www.instagram.com/333cyj333/", function (err, body) {
-    //     var shareData = body.substring(body.lastIndexOf("window._sharedData = ") + 21, body.lastIndexOf('show_app_install') + 23);
-    //     //console.log(shareData);
-    //     var jsonData = JSON.parse(shareData)
-    //     console.log(jsonData);
-    //     console.log(jsonData.entry_data.ProfilePage["0"].graphql.user.edge_owner_to_timeline_media.count)
-    // });
-
-    request({
-        url: `https://www.instagram.com/${username}`,//?__a=1
-        // json: true
-    }, function (error, response, body) {
-        if (!error && response.statusCode === 200) {
-            //FUNCTION CHECK DELETED
-            var currenttime = moment().format('YYYY-MM-DD HH:mm:00');
-            var unixCurrenttime = moment(currenttime).unix();
-            var chklastMin = moment().subtract(1, 'minute').format('YYYY-MM-DD HH:mm:00');
-            var unixLastMin = moment(chklastMin).unix();
-
-            //NEW SCARP
-            var shareData = body.substring(body.lastIndexOf("window._sharedData = ") + 21, body.lastIndexOf('show_app_install') + 23);
-            var jsonData = JSON.parse(shareData)
-            var body = jsonData.entry_data.ProfilePage["0"];
-
-
-            var count = body.graphql.user.edge_owner_to_timeline_media.count;//body.user.media.count;
-            var follower = body.graphql.user.edge_followed_by.count;
-
-            var backUpData = {
-                id: unixLastMinFirstSett,//username + '-' + unixCurrenttime, //also filename
-                "name": "item",
-                "itemLen": count
-            };
-
-            store.add(backUpData, function (err) {
-                // called when the file has been written
-                // to the /path/to/storage/location/12345.json
-                if (err) console.log(err); // err if the save failed
-            });
-
-            store.load(username + '-' + unixLastMin, function (err, object) {
-                if (err) console.log(err);
-                else {
-                    //console.log("loadded : " + unixLastMin);
-                    var getItemLen = object.itemLen;
-                    //console.log("itemLength Last Minute : " + getItemLen);
-                    //CHECK
-                    if (count < getItemLen) {
-                        //He Deleted
-                        // console.log("He Deleted!");
-                        var fullname = config[`${username}`][0].name;
-                        var status = `[ ‼️ ] ${fullname} deleted ${getItemLen - count} post(s).\nThe post left ${count}. (；ﾟДﾟ)`;
-                        console.log(status);
-                        TweetDel(status);
-                    }
-
-                    //โพสต์ภาพใหม่
-                    if (count > getItemLen) {
-                        console.log("-----NEW POST------");
-                        var nPost = count - getItemLen;
-                        for (var i = 0; i < nPost; i++) {
-                            var nodes = body.graphql.user.edge_owner_to_timeline_media.edges[i].node;//body.user.media.nodes[i];
-                            //__typename : , GraphImage,GraphSidecar,GraphVideo?
-                            var code = nodes.shortcode;//nodes.code;
-                            CheckMediaDataType(code, username);
-                        }
-                    }
-                    //finish check
-                    store.remove(username + '-' + unixLastMin, function (err) {
-                        //console.log("remove : " + chklastMin);
-                        if (err) console.log(err); // err if the file removal failed
-                    });
-                }
-
-            });
-
-
-            //SESSION ID
-            var session_id = config.session_id;
-            //expired : 2018-07-22T02:57:03.619Z
-            //var cyjid = config.cyjid;
-            var owner_id = config[`${username}`][0].id;
-            var somzid = config.somzid;
-
-            //IG STORY CHECK 
-            console.log("---------STOP IG STORY CHECK------------");
-            getStories({
-                id: owner_id,
-                userid: somzid,
-                sessionid: session_id
-            }).then(stories => {
-                var body = stories;
-                var storyid = body.id;
-                //console.log(storyid);
-                //var story_url = "https://www.instagram.com/p/" + code;
-                //console.log("STORY URL : " + story_url);
-                var story_count = body.items.length;
-                //console.log("story have : " + story_count);
-                if (story_count > 0) {
-                    for (var c = 0; c < story_count.length; c++) {
-
-
-                        var item = body.items[c];
-                        //var code = item.code;
-                        //DateTime Taken
-                        var taken_at = item.taken_at;
-                        var taken_at_mm = moment.unix(taken_at);
-                        var time_taken = momentTz.tz(taken_at_mm, "Asia/Seoul").format('MMM DD YYYY, HH:mm');
-                        console.log("Taken At : " + time_taken);
-                        var time_taken_forchk = moment(taken_at_mm).format('YYYY-MM-DD HH:mm:00');
-
-
-                        //if (time_taken_forchk == chklastMin) {
-
-                        //CAPTION
-                        var chkcaption = item.caption;
-                        var textcaption = "";
-                        if (chkcaption != null) {
-                            textcaption = item.caption.text;
-                        }
-
-                        //var getconfig = require('./config/default');
-                        var caption_story = config[`${username}`][0].title_story;
-                        var caption_hashtag = config[`${username}`][0].hashtag;
-
-                        var caption0 = caption_story + textcaption;
-                        var caption1 = caption_hashtag;
-                        var caption = caption0 + caption1 + time_taken;
-                        console.log(caption);
-                        //Media Type
-                        var media_type = item.media_type;
-                        if (media_type == 1) { //Picture
-                            var original_width = item.original_width;
-                            var original_height = item.original_height;
-                            var img_ver2 = item.image_versions2;
-                            var candidates_length = item.image_versions2.candidates.length;
-                            console.log(candidates_length);
-                            for (var i = 0; i < candidates_length; i++) {
-                                if (img_ver2.candidates[i].width == original_width && img_ver2.candidates[i].height == original_height) { // Maxinum,Original Image
-                                    console.log("found " + original_width, original_height);
-                                    var img_url = img_ver2.candidates[i].url;
-                                    console.log("Image URL : " + img_url);
-                                    var stream = request(img_url).pipe(fs.createWriteStream(`./public/media/${storyid}.jpg`));
-                                    stream.on('finish', function () {
-                                        console.log('---stream done---')
-                                        //POST TWITTER
-                                        console.log("start tweet image");
-                                        TweetImage(storyid, caption, username);
-                                    });
-                                }
-                            }
-
-
-                        }
-
-                        if (media_type == 2) { //Video
-                            var video_url = item.video_versions[0].url;
-                            console.log("VIDEO URL : " + video_url);
-
-                            var stream = request(video_url).pipe(fs.createWriteStream(`./public/media/${storyid}.mp4`));
-                            stream.on('finish', function () {
-                                console.log('---stream video done---')
-
-                                var videoTweet = new VideoTweet({
-                                    file_path: `./public/media/${storyid}.mp4`,
-                                    tweet_text: caption,
-                                    username, username
-                                });
-                            });
-
-
-                        }
-
-                    }
-                }
-
-                // }
-            })
-
-        }
-    });
-}
 //FUNCTION GET MEDIA DATA TYPE
 function CheckMediaDataType(code, username) {
     request({
@@ -890,7 +925,7 @@ function CheckMediaDataType(code, username) {
                 console.log('---stream video done---')
 
                 var file_path = `./public/media/${code}.mp4`;
-                TweetVideo(file_path, total_msg_tweet, username);
+                TweetVideo(file_path, total_msg_tweet, username, code);
             });
         }
 
@@ -1155,7 +1190,7 @@ function CheckMediaDataType(code, username) {
                         console.log('---stream done---')
                         //POST TWITTER
                         console.log("start tweet image");
-                        TweetImage(code, total_msg_tweet,username);
+                        TweetImage(code, total_msg_tweet, username);
                     });
                 }
 
@@ -1202,7 +1237,8 @@ function CheckMediaDataType(code, username) {
 
 //FUNCTION TWEET IMAGE
 function TweetImage(code, total_msg_tweet, username) {
-    console.log(code, total_msg_tweet);
+    var clean_msg_tweet = total_msg_tweet.replace("@","@.");
+    console.log(code, tweet_status);
     //LENAYK
     var secret = config[`${username}`][0].auth;//require("./auth"); //save before launch (auth)
     var Twitter = new TwitterPackage(secret);
@@ -1211,12 +1247,24 @@ function TweetImage(code, total_msg_tweet, username) {
         if (!error) {
             console.log(media);
             var status = {
-                status: total_msg_tweet,
+                status: clean_msg_tweet,
                 media_ids: media.media_id_string // Pass the media id string
             }
             Twitter.post('statuses/update', status, function (error, tweet, response) {
-                if (!error) {
+                if (error) console.log(error);
+                else {
                     console.log("done");
+                    //Save Tweet to MongoDB
+                    MongoClient.connect(dbURL, function (err, client) {
+                        assert.equal(null, err);
+                        var db = client.db(dbName);
+                        // Add Document
+                        insertDataPost(db, username, code, tweet, function (callback) {
+                            console.log(callback);
+                            client.close();
+                        });
+                    });
+
                 }
             });
 
@@ -1229,9 +1277,31 @@ function TweetImage(code, total_msg_tweet, username) {
 }
 
 
+function ReplyTweet(tweet, caption, username) {
+    var clean_caption = caption.replace("@","@.");
+    var res = {
+        status: "@" + tweet.user.screen_name + ' [CAPTION] ' + clean_caption,
+        in_reply_to_status_id: '' + tweet.id_str
+    };
+
+    var secret = config[`${username}`][0].auth;
+    var Twitter = new TwitterPackage(secret);
+
+    Twitter.post('statuses/update', res, function (err, data, response) {
+        if (err) console.log(err);
+        else {
+            console.log("+++++ reply at " + username + " successfully");
+        }
+        //console.log(data);
+    }
+    );
+
+}
+
 
 //FUNCTION CAROUSEL TWEET
 function CarouselImageTweet(allData, allDataLength, code, total_msg_tweet, username, callback) {
+    var clean_msg_tweet = total_msg_tweet.replace("@","@.");
     var secret = config[`${username}`][0].auth;
     var Twitter = new TwitterPackage(secret);
     console.log("------Start Carousel Image Function--------");
@@ -1255,13 +1325,23 @@ function CarouselImageTweet(allData, allDataLength, code, total_msg_tweet, usern
                         if (mediaIDSet.length == allDataLength) {
                             //TWEET MESSAGE
                             var status = {
-                                status: total_msg_tweet,
+                                status: clean_msg_tweet,
                                 media_ids: `${mediaIDSet}` // Pass the media id string
                             }
                             // console.log(media.media_id_string);
                             Twitter.post('statuses/update', status, function (error, tweet, response) {
                                 if (!error) {
                                     // console.log("done");
+                                    //Save Tweet to MongoDB
+                                    MongoClient.connect(dbURL, function (err, client) {
+                                        assert.equal(null, err);
+                                        var db = client.db(dbName);
+                                        // Add Document
+                                        insertDataPost(db, username, code, tweet, function (callback) {
+                                            console.log(callback);
+                                            client.close();
+                                        });
+                                    });
                                     callback("done");
                                 }
                             });
@@ -1284,29 +1364,29 @@ function CarouselImageTweet(allData, allDataLength, code, total_msg_tweet, usern
 }
 
 
-
-
 const findShortCode = function (db, shortcode, callback) {
     // Get the documents collection
     const collection = db.collection('db_ars');
     // Find some documents
-    collection.find({ 'shortcode': shortcode }).toArray(function (err, docs) {
+    collection.find({ 'shortcode': shortcode }).sort({ 'shortcode': -1 }).toArray(function (err, docs) {
         assert.equal(err, null);
+        // console.log(docs);
         if (docs.length > 0) {
-            return callback(false);
-        } else return callback(true);
+            return callback(docs);
+        } else return callback(false);
 
     });
 }
 
 
 //create collection
-const insertDataPost = function (db, username, shortcode, getDataCode, callback) {
-    db.collection('db_ars').insertOne({
+const insertDataPost = function (db, username, shortcode, tweet, callback) {
+    db.collection('db_ars').save({
         "username": username,
         "shortcode": shortcode,
         "active": "yes",
-        "node": getDataCode
+        //"node": getDataCode,
+        "tweet": tweet
     }, function (err, result) {
 
         assert.equal(err, null);
@@ -1363,12 +1443,12 @@ function TweetMSG(status, username) {
 }
 
 //FUNCTION TWEET VIDEO
-function TweetVideo(file_path, total_msg_tweet, username) {
+function TweetVideo(file_path, total_msg_tweet, username, code) {
 
     //FUNCTION TWEET VIDEO
     var secret = config[`${username}`][0].auth;//require('./oauth'); //LENAYK() (old : oauth.json)
 
-    var client = new TwitterPackage(secret);
+    var Twitter = new TwitterPackage(secret);
     var mediaType = 'video/mp4';//'image/gif'; // `'video/mp4'` is also supported
     const mediaData = require('fs').readFileSync(file_path);
     const mediaSize = require('fs').statSync(file_path).size;
@@ -1381,20 +1461,28 @@ function TweetVideo(file_path, total_msg_tweet, username) {
             console.log("Media ID : " + mediaId);
             // You now have an uploaded movie/animated gif
             // that you can reference in Tweets, e.g. `update/statuses`
-            // will take a `mediaIds` param.
+            // will take a `mediaIds` param.'
+            var clean_msg_tweet = total_msg_tweet.replace("@","@.");
             var status = {
-                status: total_msg_tweet,
+                status: clean_msg_tweet,
                 media_ids: mediaId // Pass the media id string
             }
             console.log("Start Tweet");
-            client.post('statuses/update', status, function (error, tweet, response) {
+            Twitter.post('statuses/update', status, function (error, tweet, response) {
                 if (!error) {
-                    console.log(tweet);
+                    //console.log(tweet);
+                    //Save Tweet to MongoDB
+                    MongoClient.connect(dbURL, function (err, client) {
+                        assert.equal(null, err);
+                        var db = client.db(dbName);
+                        // Add Document
+                        insertDataPost(db, username, code, tweet, function (callback) {
+                            console.log(callback);
+                            client.close();
+                        });
+                    });
                 }
             });
-
-
-
         });
 
     /**
@@ -1443,7 +1531,7 @@ function TweetVideo(file_path, total_msg_tweet, username) {
      */
     function makePost(endpoint, params) {
         return new Promise((resolve, reject) => {
-            client.post(endpoint, params, (error, data, response) => {
+            Twitter.post(endpoint, params, (error, data, response) => {
                 if (error) {
                     reject(error);
                 } else {
