@@ -1238,7 +1238,6 @@ function CheckMediaDataType(code, username) {
 //FUNCTION TWEET IMAGE
 function TweetImage(code, total_msg_tweet, username) {
     var clean_msg_tweet = total_msg_tweet.replace("@","@.");
-    console.log(code, tweet_status);
     //LENAYK
     var secret = config[`${username}`][0].auth;//require("./auth"); //save before launch (auth)
     var Twitter = new TwitterPackage(secret);
@@ -1358,9 +1357,6 @@ function CarouselImageTweet(allData, allDataLength, code, total_msg_tweet, usern
         }
 
     });
-
-
-
 }
 
 
