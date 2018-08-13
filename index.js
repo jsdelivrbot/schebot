@@ -792,26 +792,26 @@ function GetStoryFromPost(num, username) {
             var time_taken_forchk = moment(taken_at_mm).format('YYYY-MM-DD HH:mm:00');
 
             var media_type = item.media_type;
-            if (time_taken_forchk == chklastMin) {
-                if (media_type == 1) {
-                    CheckMediaDataType(itemCode, username);
-                }
-
-                if (media_type == 2) { //Video
-                    var video_url = item.video_versions[0].url;
-                    console.log("VIDEO URL : " + video_url);
-
-                    var caption = config[`${username}`][0].title_story + "\n" + config[`${username}`][0].hashtag + "\n" + time_taken;
-                    var stream = request(video_url).pipe(fs.createWriteStream(`./public/media/${itemCode}.mp4`));
-                    stream.on('finish', function () {
-                        console.log('---stream video done---')
-                        var file_path = `./public/media/${itemCode}.mp4`;
-                        TweetVideo(file_path, caption, username, itemCode);
-                    });
-
-
-                }
+            // if (time_taken_forchk == chklastMin) {
+            if (media_type == 1) {
+                CheckMediaDataType(itemCode, username);
             }
+
+            if (media_type == 2) { //Video
+                var video_url = item.video_versions[0].url;
+                console.log("VIDEO URL : " + video_url);
+
+                var caption = config[`${username}`][0].title_story + "\n" + config[`${username}`][0].hashtag + "\n" + time_taken;
+                var stream = request(video_url).pipe(fs.createWriteStream(`./public/media/${itemCode}.mp4`));
+                stream.on('finish', function () {
+                    console.log('---stream video done---')
+                    var file_path = `./public/media/${itemCode}.mp4`;
+                    TweetVideo(file_path, caption, username, itemCode);
+                });
+
+
+            }
+            //}
             //}
 
         } else {
@@ -1237,7 +1237,7 @@ function CheckMediaDataType(code, username) {
 
 //FUNCTION TWEET IMAGE
 function TweetImage(code, total_msg_tweet, username) {
-    var clean_msg_tweet = total_msg_tweet.replace("@","@.");
+    var clean_msg_tweet = total_msg_tweet.replace("@", "@.");
     //LENAYK
     var secret = config[`${username}`][0].auth;//require("./auth"); //save before launch (auth)
     var Twitter = new TwitterPackage(secret);
@@ -1277,7 +1277,7 @@ function TweetImage(code, total_msg_tweet, username) {
 
 
 function ReplyTweet(tweet, caption, username) {
-    var clean_caption = caption.replace("@","@.");
+    var clean_caption = caption.replace("@", "@.");
     var res = {
         status: "@" + tweet.user.screen_name + ' [CAPTION] ' + clean_caption,
         in_reply_to_status_id: '' + tweet.id_str
@@ -1300,7 +1300,7 @@ function ReplyTweet(tweet, caption, username) {
 
 //FUNCTION CAROUSEL TWEET
 function CarouselImageTweet(allData, allDataLength, code, total_msg_tweet, username, callback) {
-    var clean_msg_tweet = total_msg_tweet.replace("@","@.");
+    var clean_msg_tweet = total_msg_tweet.replace("@", "@.");
     var secret = config[`${username}`][0].auth;
     var Twitter = new TwitterPackage(secret);
     console.log("------Start Carousel Image Function--------");
@@ -1458,7 +1458,7 @@ function TweetVideo(file_path, total_msg_tweet, username, code) {
             // You now have an uploaded movie/animated gif
             // that you can reference in Tweets, e.g. `update/statuses`
             // will take a `mediaIds` param.'
-            var clean_msg_tweet = total_msg_tweet.replace("@","@.");
+            var clean_msg_tweet = total_msg_tweet.replace("@", "@.");
             var status = {
                 status: clean_msg_tweet,
                 media_ids: mediaId // Pass the media id string
