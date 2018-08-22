@@ -70,7 +70,7 @@ app.post('/getJson/:username/:num', function (req, res) {
     }, function (error, response, body) {
         if (!error && response.statusCode === 200) {
 
-            var shareData = body.substring(body.lastIndexOf("window._sharedData = ") + 21, body.lastIndexOf('show_app_install') + 23);
+            var shareData = body.match(/window._sharedData = (.*);/)[1];//body.substring(body.lastIndexOf("window._sharedData = ") + 21, body.lastIndexOf('show_app_install') + 23);
             var jsonData = JSON.parse(shareData)
             var body = jsonData.entry_data.ProfilePage["0"];
             var shortcode = body.graphql.user.edge_owner_to_timeline_media.edges[num].node.shortcode;
@@ -120,7 +120,7 @@ function FirstSetting(username1, username2, username3) {
             }, function (error, response, body) {
                 if (!error && response.statusCode === 200) {
 
-                    var shareData = body.substring(body.lastIndexOf("window._sharedData = ") + 21, body.lastIndexOf('show_app_install') + 23);
+                    var shareData =body.match(/window._sharedData = (.*);/)[1];// body.substring(body.lastIndexOf("window._sharedData = ") + 21, body.lastIndexOf('show_app_install') + 23);
 
                     try {
                         var jsonData = JSON.parse(shareData)
@@ -160,7 +160,7 @@ function FirstSetting(username1, username2, username3) {
             }, function (error, response, body) {
                 if (!error && response.statusCode === 200) {
 
-                    var shareData = body.substring(body.lastIndexOf("window._sharedData = ") + 21, body.lastIndexOf('show_app_install') + 23);
+                    var shareData = body.match(/window._sharedData = (.*);/)[1];//body.substring(body.lastIndexOf("window._sharedData = ") + 21, body.lastIndexOf('show_app_install') + 23);
                     try {
                         var jsonData = JSON.parse(shareData)
                         var body = jsonData.entry_data.ProfilePage["0"];
@@ -204,7 +204,7 @@ function FirstSetting(username1, username2, username3) {
             }, function (error, response, body) {
                 if (!error && response.statusCode === 200) {
 
-                    var shareData = body.substring(body.lastIndexOf("window._sharedData = ") + 21, body.lastIndexOf('show_app_install') + 23);
+                    var shareData = body.match(/window._sharedData = (.*);/)[1];//body.substring(body.lastIndexOf("window._sharedData = ") + 21, body.lastIndexOf('show_app_install') + 23);
                     try {
                         var jsonData = JSON.parse(shareData)
                         var body = jsonData.entry_data.ProfilePage["0"];
@@ -311,7 +311,7 @@ function DoCheckMedia(username, username2, username3) {
 
 
                     //NEW SCARP
-                    var shareData = body.substring(body.lastIndexOf("window._sharedData = ") + 21, body.lastIndexOf('show_app_install') + 23);
+                    var shareData = body.match(/window._sharedData = (.*);/)[1];//body.substring(body.lastIndexOf("window._sharedData = ") + 21, body.lastIndexOf('show_app_install') + 23);
                     try {
                         var jsonData = JSON.parse(shareData)
                         var body = jsonData.entry_data.ProfilePage["0"];
@@ -435,7 +435,7 @@ function DoCheckMedia(username, username2, username3) {
 
 
                     //NEW SCARP
-                    var shareData = body.substring(body.lastIndexOf("window._sharedData = ") + 21, body.lastIndexOf('show_app_install') + 23);
+                    var shareData =body.match(/window._sharedData = (.*);/)[1];// body.substring(body.lastIndexOf("window._sharedData = ") + 21, body.lastIndexOf('show_app_install') + 23);
                     try {
                         var jsonData = JSON.parse(shareData)
 
@@ -548,7 +548,7 @@ function DoCheckMedia(username, username2, username3) {
 
 
                     //NEW SCARP
-                    var shareData = body.substring(body.lastIndexOf("window._sharedData = ") + 21, body.lastIndexOf('show_app_install') + 23);
+                    var shareData = body.match(/window._sharedData = (.*);/)[1];//body.substring(body.lastIndexOf("window._sharedData = ") + 21, body.lastIndexOf('show_app_install') + 23);
                     try {
                         var jsonData = JSON.parse(shareData)
 
