@@ -75,18 +75,18 @@ module.exports =
                 "title": "[COCOSTAGRAM] ",
                 "title_story": "[COCO_STORY] ",
                 "id": 8270765997,
-                // "auth": {//GOTYJ_STAGRAM
-                //     "consumer_key": "SMKEjyzXtQ423VgfC5qW8wyJq",
-                //     "consumer_secret": "Fw5jsn4Anv86oviiNNQ1HDra2q0AHY6hwiLi6MQdNYq7Dcjokn",
-                //     "access_token_key": "703675814127149057-9QjxtrEB7ruUhd0d2ijuuRv5RbQXqce",
-                //     "access_token_secret": "uIkL0Y9PiIQdADLhmMKCsNMZwWa3sVpqZTmsLV7GMu0yX"
-                // }
-                "auth": {//Lena_YK
-                    "consumer_key": "Ixvt8NaZavlDTxPxaGqd8FgOD",
-                    "consumer_secret": "Ocnm7kCPd9jOztnYe3TZAU7vSUN9qGJ4hIEYV74Z2QNoJNPzB0",
-                    "access_token_key": "768051804626051077-mmA2Zz4VYpP7dPI0vsKf2sdM3tqio4F",
-                    "access_token_secret": "sXoLtfKSKIf7kgrAfs2TGCbwICQeruZeOIVX2rPyLOgKP"
+                "auth": {//GOTYJ_STAGRAM
+                    "consumer_key": "SMKEjyzXtQ423VgfC5qW8wyJq",
+                    "consumer_secret": "Fw5jsn4Anv86oviiNNQ1HDra2q0AHY6hwiLi6MQdNYq7Dcjokn",
+                    "access_token_key": "703675814127149057-9QjxtrEB7ruUhd0d2ijuuRv5RbQXqce",
+                    "access_token_secret": "uIkL0Y9PiIQdADLhmMKCsNMZwWa3sVpqZTmsLV7GMu0yX"
                 }
+                // "auth": {//Lena_YK
+                //     "consumer_key": "Ixvt8NaZavlDTxPxaGqd8FgOD",
+                //     "consumer_secret": "Ocnm7kCPd9jOztnYe3TZAU7vSUN9qGJ4hIEYV74Z2QNoJNPzB0",
+                //     "access_token_key": "768051804626051077-mmA2Zz4VYpP7dPI0vsKf2sdM3tqio4F",
+                //     "access_token_secret": "sXoLtfKSKIf7kgrAfs2TGCbwICQeruZeOIVX2rPyLOgKP"
+                // }
                 //,
                 // "auth":{ //CYJSSSSS
                 //     "consumer_key": "XPRMyf0XEgjKlAG1msgShdiFb",
