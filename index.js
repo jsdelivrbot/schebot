@@ -120,7 +120,7 @@ function FirstSetting(username1, username2, username3) {
             }, function (error, response, body) {
                 if (!error && response.statusCode === 200) {
 
-                    var shareData =body.match(/window._sharedData = (.*);/)[1];// body.substring(body.lastIndexOf("window._sharedData = ") + 21, body.lastIndexOf('show_app_install') + 23);
+                    var shareData = body.match(/window._sharedData = (.*);/)[1];// body.substring(body.lastIndexOf("window._sharedData = ") + 21, body.lastIndexOf('show_app_install') + 23);
 
                     try {
                         var jsonData = JSON.parse(shareData)
@@ -435,7 +435,7 @@ function DoCheckMedia(username, username2, username3) {
 
 
                     //NEW SCARP
-                    var shareData =body.match(/window._sharedData = (.*);/)[1];// body.substring(body.lastIndexOf("window._sharedData = ") + 21, body.lastIndexOf('show_app_install') + 23);
+                    var shareData = body.match(/window._sharedData = (.*);/)[1];// body.substring(body.lastIndexOf("window._sharedData = ") + 21, body.lastIndexOf('show_app_install') + 23);
                     try {
                         var jsonData = JSON.parse(shareData)
 
@@ -1443,17 +1443,21 @@ function TweetVideo(file_path, total_msg_tweet, username, code) {
 
     //FUNCTION TWEET VIDEO
     var secret = config[`${username}`][0].auth;//require('./oauth'); //LENAYK() (old : oauth.json)
-
+    // file_path = './public/media/testvideo.mp4';
     var Twitter = new TwitterPackage(secret);
     var mediaType = 'video/mp4';//'image/gif'; // `'video/mp4'` is also supported
     const mediaData = require('fs').readFileSync(file_path);
     const mediaSize = require('fs').statSync(file_path).size;
 
+
+
+    var finalize_success = false;
     console.log(mediaSize);
     initUpload() // Declare that you wish to upload some media
         .then(appendUpload) // Send the data for the media
         .then(finalizeUpload) // Declare that you are done uploading chunks
         .then(mediaId => {
+
             console.log("Media ID : " + mediaId);
             // You now have an uploaded movie/animated gif
             // that you can reference in Tweets, e.g. `update/statuses`
@@ -1461,11 +1465,13 @@ function TweetVideo(file_path, total_msg_tweet, username, code) {
             var clean_msg_tweet = total_msg_tweet.replace("@", "@.");
             var status = {
                 status: clean_msg_tweet,
-                media_ids: mediaId // Pass the media id string
+                media_ids: mediaId// Pass the media id string
             }
             console.log("Start Tweet");
+            // if (finalize_success == true) {
             Twitter.post('statuses/update', status, function (error, tweet, response) {
                 if (!error) {
+                    console.log("Tweet Success");
                     //console.log(tweet);
                     //Save Tweet to MongoDB
                     MongoClient.connect(dbURL, function (err, client) {
@@ -1478,7 +1484,11 @@ function TweetVideo(file_path, total_msg_tweet, username, code) {
                         });
                     });
                 }
+                if (error) console.log(error);
+
             });
+            // }
+
         });
 
     /**
@@ -1488,9 +1498,10 @@ function TweetVideo(file_path, total_msg_tweet, username, code) {
     function initUpload() {
         return makePost('media/upload', {
             command: 'INIT',
+            media_category: 'tweet_video',
             total_bytes: mediaSize,
             media_type: mediaType,
-        }).then(data => data.media_id_string);
+        }, true).then(data => data.media_id_string);
     }
 
     /**
@@ -1499,12 +1510,18 @@ function TweetVideo(file_path, total_msg_tweet, username, code) {
      * @return Promise resolving to String mediaId (for chaining)
      */
     function appendUpload(mediaId) {
+        var bytes_sent = 0;
+        var segment_id = 0;
+        var mediaID_Set = [];
+
+
+        //Original Function
         return makePost('media/upload', {
             command: 'APPEND',
             media_id: mediaId,
             media: mediaData,
             segment_index: 0
-        }).then(data => mediaId);
+        }, true).then(data => mediaId);
     }
 
     /**
@@ -1516,7 +1533,7 @@ function TweetVideo(file_path, total_msg_tweet, username, code) {
         return makePost('media/upload', {
             command: 'FINALIZE',
             media_id: mediaId
-        }).then(data => mediaId);
+        }, true).then(data => mediaId);
     }
 
     /**
@@ -1528,10 +1545,65 @@ function TweetVideo(file_path, total_msg_tweet, username, code) {
     function makePost(endpoint, params) {
         return new Promise((resolve, reject) => {
             Twitter.post(endpoint, params, (error, data, response) => {
+                console.log("ENDPOINT IS :  " + endpoint);
+                console.log(params);
                 if (error) {
                     reject(error);
                 } else {
-                    resolve(data);
+
+                    console.log(params);
+                    if (params.command == 'FINALIZE') {
+                        var mediaID = params.media_id;
+                        var status = {
+                            command: 'STATUS',
+                            media_id: mediaID
+                        }
+
+                        var chkProcess = "";
+                        var myVar;
+                        var index = 0;
+                        myFunction();
+                        function myFunction() {
+                            myVar = setTimeout(myFunction, 5000);
+
+                            Twitter.get('media/upload', status, function (error, result, response) {
+                                console.log("------------------------RESULT OF STATUS --------------------");
+                                if (!error) {
+                                    console.log(result);
+                                    var chkProcess = result.processing_info.state;
+                                    console.log("Check Process ::::::: " + chkProcess);
+                                    if (chkProcess == "succeeded") {
+                                        clearTimeout(myVar);
+                                        resolve(data);
+                                    }
+                                    index += 1;
+                                    if (index == 100) {
+                                        clearTimeout(myVar);
+                                    }
+                                } else {
+                                    clearTimeout(myVar);
+                                    console.log(error);
+                                }
+                            })
+                        }
+
+
+                        // clearTimeout(myVar);
+                        //     request({ url: 'https://upload.twitter.com/1.1/media/upload.json?command=STATUS&media_id=' + mediaID,
+                        //     header : 'authorization: OAuth oauth_consumer_key=“<MY_CONSUMER_KEY>“ , oauth_nonce="GENERATED", oauth_signature="GENERATED", oauth_signature_method="HMAC-SHA1", oauth_timestamp="GENERATED", oauth_token=“<MY_ACCESS_TOKEN>”, oauth_version="1.0"'
+                        //  }
+                        //         , function (error, response, body) {
+                        //             console.log("-----------------Check Status--------------------");
+                        //             if (!error) console.log(body);
+                        //             if (error) console.log(error);
+
+                        //         });
+
+                    } else {
+                        resolve(data);
+                    }
+
+
                 }
             });
         });
@@ -1539,5 +1611,26 @@ function TweetVideo(file_path, total_msg_tweet, username, code) {
 
 
 
+
+}
+
+
+function CheckProcessTweet(username, status) {
+
+    var secret = config[`${username}`][0].auth;//require('./oauth'); //LENAYK() (old : oauth.json)
+    // file_path = './public/media/testvideo.mp4';
+    var Twitter = new TwitterPackage(secret);
+    Twitter.get('media/upload', status, function (error, result, response) {
+        console.log("------------------------RESULT OF STATUS --------------------");
+        if (!error) {
+            console.log(result);
+            var chkProcess = result.processing_info.state;
+            console.log("Check Process ::::::: " + chkProcess);
+            return chkProcess;
+        } else {
+            console.log(error);
+            return null;
+        }
+    })
 
 }
