@@ -51,7 +51,7 @@
     "tough-cookie": "^2.3.4",
     "twit": "^2.2.9",
     "twitter": "^1.7.1",
-    "twitter-text": "^2.0.4",
+    "twitter-text": "^2.0.5",
     "util": "^0.10.3"
   },
   "repository": {

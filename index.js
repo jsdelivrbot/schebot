@@ -8,6 +8,7 @@ var bodyParser = require('body-parser')
 var moment = require('moment')
 var momentTz = require('moment-timezone');
 var TwitterPackage = require('twitter');
+var Twittxt = require('twitter-text');
 var Agenda = require('agenda');
 var forEach = require('async-foreach').forEach;
 const socketIO = require('socket.io');
@@ -883,18 +884,42 @@ function CheckMediaDataType(code, username) {
         var timestmp = create_time_KR;
         console.log("timestmp : " + timestmp);
 
-        var txtLeft = 280 - fistfixedTxt.length - hashtagLink.length - timestmp.length - 3;
-        console.log("txtLeft : " + txtLeft);
+        console.log("========First Text Length : " + fistfixedTxt.length);
+        console.log("============= HashTag + Link Length : " + hashtagLink.length);
+        console.log("================ TimeStamp Length : " + timestmp.length);
 
-        var igcaption;
-        if (txtcaption.length > txtLeft) {
-            console.log("-- ig caption too long -- ")
-            igcaption = txtcaption.substring(0, txtLeft) + "...";
+        //Check Text Title
+        var validRange_title = Twittxt.parseTweet(fistfixedTxt + hashtagLink + timestmp);
+        // var txtLeft = 280 - validRange_title.validRangeEnd;
+        console.log(validRange_title);
+
+
+        console.log("================= Using Twitter Text Parser================");
+        var validRange = Twittxt.parseTweet(txtcaption);
+        console.log(validRange);
+        // Set Text Caption to Valid Range
+        if (validRange.valid == false) {
+            //Text is too long
+            igcaption = txtcaption.substring(validRange.validRangeStart, validRange.validRangeEnd - validRange_title.validRangeEnd - 3);
+            igcaption += "...";
+        } else {
+            igcaption = txtcaption.substring(validRange.validRangeStart, validRange.validRangeEnd - validRange_title.validRangeEnd);
+            console.log(igcaption);
         }
-        if (txtcaption.length <= txtLeft) {
-            console.log("-- ig caption NOT too long -- ")
-            igcaption = txtcaption;
-        }
+
+
+
+        // var igcaption;
+        // if (txtcaption.length > txtLeft) {
+        //     console.log("-- ig caption too long -- ")
+        //     igcaption = txtcaption.substring(0, txtLeft) + "...";
+        // }
+        // if (txtcaption.length <= txtLeft) {
+        //     console.log("-- ig caption NOT too long -- ")
+        //     igcaption = txtcaption;
+        // }
+
+
         var total_msg_tweet = fistfixedTxt + igcaption + hashtagLink + timestmp;
         console.log(total_msg_tweet);
 
@@ -932,18 +957,28 @@ function CheckMediaDataType(code, username) {
 
         //TYPE CAROUSEL
         if (__typename == "GraphSidecar") {
-            var txtLeft = 280 - fistfixedTxt.length - hashtagLink.length - timestmp.length - 3 - 5;
-            console.log("txtLeft : " + txtLeft);
-            var igcaption;
-            if (txtcaption.length > txtLeft) {
-                console.log("-- ig caption too long -- ")
-                igcaption = txtcaption.substring(0, txtLeft) + "...";
+
+            if (validRange.valid == false) {
+                //Text is too long
+                igcaption = txtcaption.substring(validRange.validRangeStart, validRange.validRangeEnd - validRange_title.validRangeEnd - 3 - 5);
+                igcaption += "...";
+            } else {
+                igcaption = txtcaption.substring(validRange.validRangeStart, validRange.validRangeEnd - validRange_title.validRangeEnd);
+                console.log(igcaption);
             }
-            if (txtcaption.length <= txtLeft) {
-                console.log("-- ig caption NOT too long -- ")
-                igcaption = txtcaption;
-            }
-            console.log("IG CAPTION : " + igcaption);
+
+            // var txtLeft = 280 - fistfixedTxt.length - hashtagLink.length - timestmp.length - 3 - 5;
+            // console.log("txtLeft : " + txtLeft);
+            // var igcaption;
+            // if (txtcaption.length > txtLeft) {
+            //     console.log("-- ig caption too long -- ")
+            //     igcaption = txtcaption.substring(0, txtLeft) + "...";
+            // }
+            // if (txtcaption.length <= txtLeft) {
+            //     console.log("-- ig caption NOT too long -- ")
+            //     igcaption = txtcaption;
+            // }
+            // console.log("IG CAPTION : " + igcaption);
 
 
 
