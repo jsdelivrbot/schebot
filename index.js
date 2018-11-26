@@ -903,7 +903,7 @@ function CheckMediaDataType(code, username) {
             igcaption = txtcaption.substring(validRange.validRangeStart, validRange.validRangeEnd - validRange_title.validRangeEnd - 3);
             igcaption += "...";
         } else {
-            igcaption = txtcaption.substring(validRange.validRangeStart, validRange.validRangeEnd - validRange_title.validRangeEnd);
+            igcaption = txtcaption.substring(validRange.validRangeStart, validRange.validRangeEnd + 1);
             console.log(igcaption);
         }
 
@@ -963,7 +963,7 @@ function CheckMediaDataType(code, username) {
                 igcaption = txtcaption.substring(validRange.validRangeStart, validRange.validRangeEnd - validRange_title.validRangeEnd - 3 - 5);
                 igcaption += "...";
             } else {
-                igcaption = txtcaption.substring(validRange.validRangeStart, validRange.validRangeEnd - validRange_title.validRangeEnd);
+                igcaption = txtcaption.substring(validRange.validRangeStart, validRange.validRangeEnd + 1);
                 console.log(igcaption);
             }
 
