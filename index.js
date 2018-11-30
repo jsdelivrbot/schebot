@@ -898,7 +898,7 @@ function CheckMediaDataType(code, username) {
         var validRange = Twittxt.parseTweet(txtcaption);
         console.log(validRange);
         // Set Text Caption to Valid Range
-        if (validRange.valid == false) {
+        if (validRange.valid == false && validRange.validRangeEnd != 0) {
             //Text is too long
             igcaption = txtcaption.substring(validRange.validRangeStart, validRange.validRangeEnd - validRange_title.validRangeEnd - 3);
             igcaption += "...";
