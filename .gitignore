@@ -10,16 +10,13 @@ npm-debug.log
 # Docker
 Dockerfile
 docker-compose.yml
-test.js
 *.jpg
 *.jpg
 *.mp4
 auth_lenayk.json
 package-lock.json
 testMoment.js
-test.js
 
-test.js
 test.js
 public/media/cachefile.json
 index_2.js
@@ -31,5 +28,4 @@ temp/*.js
 temp/*.json
 
 public/media/graph.png
-public/media/BWvpnQ_lBzG.mp4
-public/media/BWtBAqklcgO.mp4
+public/media/*.mp4
